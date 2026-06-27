@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>GolfLog Admin v5</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #020617; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; min-height: 100vh; padding: 20px; }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+    .btn-green { background: #166534; color: #4ade80; }
+    .btn-green:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
+    .btn-red { background: #7f1d1d; color: #f87171; }
+    .btn-gray { background: #1e293b; color: #94a3b8; }
+    .progress-bar { background: #1e293b; border-radius: 8px; height: 12px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #166534, #4ade80); border-radius: 8px; transition: width 0.3s; }
+    .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .stat-val { font-weight: 800; color: #4ade80; }
+    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 160px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 8px; }
+    .term-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-height: 260px; overflow-y: auto; }
+    .t { padding: 5px; border-radius: 6px; font-size: 11px; text-align: center; font-weight: 700; }
+    .t-p { background: #1e293b; color: #475569; }
+    .t-a { background: #1e3a5f; color: #60a5fa; }
+    .t-d { background: #0c2218; color: #4ade80; }
+    .t-e { background: #1c0a0a; color: #f87171; }
+    .note { color: #4ade80; font-size: 12px; background: #0c2218; border: 1px solid #166534; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <span style="font-size:24px">⛳</span><h1>GolfLog Admin v5</h1>
+  </div>
+  <div class="sub">Download golf courses using search terms</div>
+
+  <div class="note">
+    ✓ Uses search API (not ID lookup) — no rate limit issues!<br>
+    Searches 65 terms (a-z + golf words) × 20 results = up to 1,300 unique courses per run.<br>
+    Run multiple times with different terms to build up the database.
+  </div>
+
+  <div class="card">
+    <div class="stat"><span>Courses Saved This Run</span><span class="stat-val" id="saved">0</span></div>
+    <div class="stat"><span>Total in Database</span><span class="stat-val" id="dbTotal">—</span></div>
+    <div class="stat"><span>Search Terms Done</span><span class="stat-val" id="termsDone">0 / 65</span></div>
+    <div class="stat"><span>Current Term</span><span class="stat-val" id="currentTerm">—</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="bar" style="width:0%"></div></div>
+    <button class="btn btn-green" id="startBtn" onclick="startDownload()">⬇ Download All Terms</button>
+    <button class="btn btn-red" id="stopBtn" onclick="stopDownload()" style="display:none">■ Stop</button>
+    <button class="btn btn-gray" onclick="checkDB()">🔄 Check Database Count</button>
+    <div class="log" id="log">Ready. Tap Download to begin.
+This uses the search API which has a much higher rate limit.
+Each term returns up to 20 courses — all saved to Supabase.</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:8px">SEARCH TERMS</div>
+    <div class="term-grid" id="termGrid"></div>
+  </div>
+
+  <script>
+    const PROXY = "https://golfproxy.vercel.app";
+    const SUPABASE = "https://koingualzctoyulzytxb.supabase.co";
+    const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
+
+    const TERMS = [
+      "a","b","c","d","e","f","g","h","i","j","k","l","m",
+      "n","o","p","q","r","s","t","u","v","w","x","y","z",
+      "golf","club","country","links","course","creek","ridge",
+      "lake","hill","pines","oak","cedar","pine","eagle","birch",
+      "meadow","valley","river","forest","ranch","resort","national",
+      "municipal","public","royal","bay","sand","rock","stone",
+      "green","fairway","par","ace","iron","wood","wedge","driver"
+    ];
+
+    let running = false;
+    let totalSaved = 0;
+
+    // Build term grid
+    const grid = document.getElementById("termGrid");
+    TERMS.forEach((t, i) => {
+      const el = document.createElement("div");
+      el.className = "t t-p";
+      el.id = "t" + i;
+      el.textContent = t;
+      grid.appendChild(el);
+    });
+
+    async function checkDB() {
+      try {
+        const res = await fetch(`${SUPABASE}/rest/v1/courses?select=count`, {
+          headers: {
+            "apikey": SKEY,
+            "Prefer": "count=exact",
+            "Range": "0-0"
+          }
+        });
+        const count = res.headers.get("content-range")?.split("/")?.[1] || "?";
+        document.getElementById("dbTotal").textContent = parseInt(count).toLocaleString();
+        log(`Database has ${count} courses total`);
+      } catch (e) { log("Could not check DB: " + e.message); }
+    }
+
+    function log(msg) {
+      const el = document.getElementById("log");
+      el.textContent += "\n" + new Date().toLocaleTimeString() + " " + msg;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function stopDownload() {
+      running = false;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").style.display = "none";
+      log("⏹ Stopped.");
+    }
+
+    async function startDownload() {
+      running = true;
+      totalSaved = 0;
+      document.getElementById("startBtn").disabled = true;
+      document.getElementById("stopBtn").style.display = "block";
+      document.getElementById("saved").textContent = "0";
+
+      // Reset grid
+      TERMS.forEach((_, i) => {
+        document.getElementById("t" + i).className = "t t-p";
+      });
+
+      log(`🚀 Starting search across ${TERMS.length} terms...`);
+
+      // Process in batches of 10 terms per API call
+      const BATCH = 1;
+      let termsDone = 0;
+
+      for (let i = 0; i < TERMS.length && running; i += BATCH) {
+        const end = Math.min(i + BATCH - 1, TERMS.length - 1);
+
+        // Mark active
+        for (let j = i; j <= end; j++) {
+          document.getElementById("t" + j).className = "t t-a";
+        }
+
+        document.getElementById("currentTerm").textContent = TERMS[i] + "..." + TERMS[end];
+
+        try {
+          const res = await fetch(`${PROXY}/api/download?start=${i}&end=${end}`);
+          const data = await res.json();
+
+          if (data.rate_limited) {
+            for (let j = i; j <= end; j++) document.getElementById("t" + j).className = "t t-e";
+            log(`⚠️ Rate limited on term "${data.last_term}". Try again later.`);
+            running = false;
+            break;
+          }
+
+          totalSaved += data.total_saved || 0;
+          termsDone = end + 1;
+
+          for (let j = i; j <= end; j++) {
+            document.getElementById("t" + j).className = "t t-d";
+          }
+
+          document.getElementById("saved").textContent = totalSaved.toLocaleString();
+          document.getElementById("termsDone").textContent = termsDone + " / " + TERMS.length;
+          document.getElementById("bar").style.width = (termsDone / TERMS.length * 100) + "%";
+
+          // Show per-term results
+          if (data.results) {
+            data.results.forEach(r => log(`✓ "${r.term}": ${r.found} new courses`));
+          }
+
+          await new Promise(r => setTimeout(r, 300));
+
+        } catch (e) {
+          log(`✗ Error: ${e.message}`);
+          for (let j = i; j <= end; j++) document.getElementById("t" + j).className = "t t-e";
+        }
+      }
+
+      if (running) {
+        log(`🎉 Complete! ${totalSaved} new courses saved this run.`);
+        await checkDB();
+      }
+
+      running = false;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").style.display = "none";
+    }
+
+    // Check DB on load
+    checkDB();
+  </script>
+</body>
+</html>
