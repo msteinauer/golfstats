@@ -136,11 +136,13 @@ Processes 8 IDs at a time, saves progress automatically.</div>
           const data = await res.json();
 
           if (data.rate_limited) {
-            log(`⚠️ Rate limited at ID ${data.last_id}. Try again tomorrow.`);
             saveProgress(data.last_id, currentSaved);
             document.getElementById("startId").value = data.last_id;
-            running = false;
-            break;
+            currentId = data.last_id;
+            log(`⏳ Rate limited at ID ${data.last_id}. Waiting 5 seconds...`);
+            await new Promise(r => setTimeout(r, 5000));
+            log(`▶ Resuming from ID ${data.last_id}...`);
+            continue;
           }
 
           currentSaved += data.saved || 0;
