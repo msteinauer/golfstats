@@ -591,8 +591,10 @@
               tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
             }));
 
-            // If no results in Supabase, fall back to live API
-            if (!courses.length && q) {
+            if (courses.length) {
+              setResults(courses);
+            } else if (!country && q) {
+              // Only fall back to live API if no country filter selected
               const apiRes = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(q + (stateAbbr ? " " + state : ""))}`);
               const apiData = await apiRes.json();
               let apiCourses = apiData.courses || [];
@@ -600,8 +602,7 @@
               setResults(apiCourses.slice(0, 20));
               if (!apiCourses.length) setError(`No courses found for "${q}"${state ? " in " + state : ""}. Try a different name.`);
             } else {
-              setResults(courses);
-              if (!courses.length) setError(`No courses found for "${q}"${state ? " in " + state : ""}. Try a different name.`);
+              setError(`No courses found for "${q}"${country ? " in " + country : ""}${state ? ", " + state : ""}. Try a different name.`);
             }
           }
         } catch (e) {
