@@ -132,7 +132,7 @@ Each term returns up to 20 courses — all saved to Supabase.</div>
       log(`🚀 Starting search across ${TERMS.length} terms...`);
 
       // Process in batches of 10 terms per API call
-      const BATCH = 5;
+      const BATCH = 1;
       let termsDone = 0;
 
       for (let i = 0; i < TERMS.length && running; i += BATCH) {
