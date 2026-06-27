@@ -139,8 +139,8 @@ Processes 8 IDs at a time, saves progress automatically.</div>
             saveProgress(data.last_id, currentSaved);
             document.getElementById("startId").value = data.last_id;
             currentId = data.last_id;
-            log(`⏳ Rate limited at ID ${data.last_id}. Waiting 5 seconds...`);
-            await new Promise(r => setTimeout(r, 5000));
+            log(`⏳ Rate limited at ID ${data.last_id}. Waiting 60 seconds before retry...`);
+            await new Promise(r => setTimeout(r, 60000));
             log(`▶ Resuming from ID ${data.last_id}...`);
             continue;
           }
