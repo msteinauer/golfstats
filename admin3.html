@@ -3,86 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GolfLog Admin v3</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>GolfLog Admin v4</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #020617; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; min-height: 100vh; padding: 20px; }
     h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-    .subtitle { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
     .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 18px; margin-bottom: 14px; }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
     .btn-green { background: #166534; color: #4ade80; }
     .btn-green:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
     .btn-red { background: #7f1d1d; color: #f87171; }
-    .progress-bar { background: #1e293b; border-radius: 8px; height: 10px; margin: 10px 0; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #166534, #4ade80); border-radius: 8px; transition: width 0.5s ease; }
+    .btn-gray { background: #1e293b; color: #94a3b8; }
+    .progress-bar { background: #1e293b; border-radius: 8px; height: 12px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #166534, #4ade80); border-radius: 8px; transition: width 0.3s; }
     .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
     .stat-val { font-weight: 800; color: #4ade80; }
-    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 140px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 10px; }
-    .state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; max-height: 380px; overflow-y: auto; }
-    .state-item { padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; }
-    .s-pending { background: #1e293b; color: #64748b; }
-    .s-active  { background: #1e3a5f; color: #60a5fa; }
-    .s-done    { background: #0c2218; color: #4ade80; }
-    .s-error   { background: #1c0a0a; color: #f87171; }
+    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 150px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 8px; }
+    .batch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-height: 300px; overflow-y: auto; }
+    .b { padding: 5px; border-radius: 6px; font-size: 10px; text-align: center; font-weight: 700; }
+    .b-p { background: #1e293b; color: #475569; }
+    .b-a { background: #1e3a5f; color: #60a5fa; }
+    .b-d { background: #0c2218; color: #4ade80; }
+    .b-e { background: #1c0a0a; color: #f87171; }
+    .note { color: #f59e0b; font-size: 12px; background: #1c1400; border: 1px solid #f59e0b33; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-    <span style="font-size:24px">⛳</span><h1>GolfLog Admin</h1>
+    <span style="font-size:24px">⛳</span><h1>GolfLog Admin v4</h1>
   </div>
-  <div class="subtitle">Download all US golf courses into Supabase</div>
+  <div class="sub">Download all ~16,000 US golf courses by ID range</div>
+
+  <div class="note">
+    ⚠️ Each course = 1 API request. With 10,000/day limit:<br>
+    • Day 1: IDs 1–10,000 &nbsp;•&nbsp; Day 2: 10,001–20,000 &nbsp;•&nbsp; Day 3: 20,001–30,000<br>
+    Progress is saved automatically — resumes where you left off!
+  </div>
 
   <div class="card">
-    <div class="stat"><span>Courses Saved</span><span class="stat-val" id="totalSaved">—</span></div>
-    <div class="stat"><span>States Done</span><span class="stat-val" id="statesDone">0 / 50</span></div>
-    <div class="stat"><span>API Requests</span><span class="stat-val" id="requests">0</span></div>
+    <div class="stat"><span>Courses Saved</span><span class="stat-val" id="saved">0</span></div>
+    <div class="stat"><span>IDs Processed</span><span class="stat-val" id="processed">0</span></div>
+    <div class="stat"><span>Current Range</span><span class="stat-val" id="range">—</span></div>
+    <div class="stat"><span>Next Resume ID</span><span class="stat-val" id="resumeId">1</span></div>
     <div class="progress-bar"><div class="progress-fill" id="bar" style="width:0%"></div></div>
-    <button class="btn btn-green" id="startBtn" onclick="start()">⬇ Download All 50 States</button>
-    <button class="btn" onclick="resetProgress()" style="background:#1e293b;color:#94a3b8;margin-bottom:8px">🔄 Reset & Start Fresh</button>
-    <button class="btn btn-red" id="stopBtn" onclick="stop()" style="display:none">■ Stop</button>
-    <div class="log" id="log">Ready. Tap Download to begin.
-Searches "golf [state]" + "club [state]" for all 50 states.
-Only ~100 API requests total — completes in one session!</div>
+    <button class="btn btn-green" id="startBtn" onclick="startDownload()">⬇ Download Courses</button>
+    <button class="btn btn-red" id="stopBtn" onclick="stopDownload()" style="display:none">■ Stop & Save Progress</button>
+    <button class="btn btn-gray" onclick="resetAll()">🔄 Reset All Progress</button>
+    <div class="log" id="log">Ready. Tap Download to begin or resume.
+Fetches IDs in batches of 500, saving US courses to Supabase.
+Progress auto-saves so you can stop and resume any time.</div>
   </div>
 
   <div class="card">
-    <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:8px">STATE PROGRESS</div>
-    <div class="state-grid" id="stateGrid"></div>
+    <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:8px">BATCH PROGRESS (each = 500 IDs)</div>
+    <div class="batch-grid" id="batchGrid"></div>
   </div>
 
   <script>
     const PROXY = "https://golfproxy.vercel.app";
-    const STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+    const TOTAL_IDS = 30000;
+    const BATCH_SIZE = 500;
+    const SAVE_KEY = "golfadmin_v4_nextid";
+    const SAVED_KEY = "golfadmin_v4_saved";
 
     let running = false;
-    let totalSaved = 0;
-    let totalRequests = 0;
-    let statesDone = 0;
+    let totalSaved = parseInt(localStorage.getItem(SAVED_KEY) || "0");
+    let nextId = parseInt(localStorage.getItem(SAVE_KEY) || "1");
 
-    // Build state grid
-    const grid = document.getElementById("stateGrid");
-    STATES.forEach(s => {
+    // Build batch grid
+    const grid = document.getElementById("batchGrid");
+    for (let i = 1; i <= TOTAL_IDS; i += BATCH_SIZE) {
+      const end = Math.min(i + BATCH_SIZE - 1, TOTAL_IDS);
       const el = document.createElement("div");
-      el.className = "state-item s-pending";
-      el.id = "s-" + s.replace(/ /g,"_");
-      el.innerHTML = `<span>${s}</span><span id="c-${s.replace(/ /g,"_")}">—</span>`;
+      el.className = "b " + (i < nextId ? "b-d" : "b-p");
+      el.id = "b" + i;
+      el.textContent = i + "-" + end;
       grid.appendChild(el);
-    });
-
-    // Load saved progress
-    const savedIdx = parseInt(localStorage.getItem("golfadmin_idx") || "0");
-    if (savedIdx > 0) {
-      log(`Resuming from state ${savedIdx + 1} (${STATES[savedIdx]})`);
-      // Mark completed states
-      for (let i = 0; i < savedIdx; i++) {
-        const key = STATES[i].replace(/ /g,"_");
-        document.getElementById("s-" + key).className = "state-item s-done";
-        document.getElementById("c-" + key).textContent = "✓";
-      }
-      statesDone = savedIdx;
-      document.getElementById("statesDone").textContent = savedIdx + " / 50";
     }
+
+    // Update UI with saved state
+    document.getElementById("saved").textContent = totalSaved.toLocaleString();
+    document.getElementById("resumeId").textContent = nextId.toLocaleString();
+    document.getElementById("bar").style.width = (nextId / TOTAL_IDS * 100) + "%";
+    document.getElementById("processed").textContent = (nextId - 1).toLocaleString();
+    if (nextId > 1) log(`Resuming from ID ${nextId.toLocaleString()} (${totalSaved} courses saved so far)`);
 
     function log(msg) {
       const el = document.getElementById("log");
@@ -90,87 +96,83 @@ Only ~100 API requests total — completes in one session!</div>
       el.scrollTop = el.scrollHeight;
     }
 
-    function resetProgress() {
-      // Clear ALL localStorage keys related to golf admin
-      Object.keys(localStorage).forEach(k => {
-        if (k.startsWith("golfadmin")) localStorage.removeItem(k);
-      });
-      alert("Progress cleared! Page will reload.");
+    function saveProgress(id, saved) {
+      localStorage.setItem(SAVE_KEY, id);
+      localStorage.setItem(SAVED_KEY, saved);
+      nextId = id;
+      totalSaved = saved;
+      document.getElementById("resumeId").textContent = id.toLocaleString();
+      document.getElementById("saved").textContent = saved.toLocaleString();
+    }
+
+    function resetAll() {
+      if (!confirm("Reset all progress? This clears your saved position but NOT the Supabase database.")) return;
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(SAVED_KEY);
       location.reload();
     }
 
-    function stop() {
+    function stopDownload() {
       running = false;
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").style.display = "none";
-      log("⏹ Stopped — progress saved.");
+      log("⏹ Stopped. Progress saved — tap Download to resume.");
     }
 
-    async function checkTotal() {
-      try {
-        const res = await fetch(`https://koingualzctoyulzytxb.supabase.co/rest/v1/courses?select=id&apikey=sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV`);
-        const data = await res.json();
-        document.getElementById("totalSaved").textContent = data.length.toLocaleString();
-      } catch {}
-    }
-
-    async function start() {
+    async function startDownload() {
       running = true;
       document.getElementById("startBtn").disabled = true;
       document.getElementById("stopBtn").style.display = "block";
 
-      const startIdx = 0; // Always start from beginning
-      log(`🚀 Starting from state ${startIdx + 1}: ${STATES[startIdx]}`);
+      let currentId = nextId;
+      let currentSaved = totalSaved;
 
-      for (let i = startIdx; i < STATES.length; i++) {
-        if (!running) break;
+      log(`🚀 Starting from ID ${currentId.toLocaleString()}`);
 
-        const state = STATES[i];
-        const key = state.replace(/ /g, "_");
-        document.getElementById("s-" + key).className = "state-item s-active";
-        log(`📥 ${state}...`);
+      while (currentId <= TOTAL_IDS && running) {
+        const batchEnd = Math.min(currentId + BATCH_SIZE - 1, TOTAL_IDS);
+        const batchEl = document.getElementById("b" + currentId);
+        if (batchEl) batchEl.className = "b b-a";
+
+        document.getElementById("range").textContent = currentId + "–" + batchEnd;
 
         try {
-          const res = await fetch(`${PROXY}/api/download?state=${encodeURIComponent(state)}`);
+          const res = await fetch(`${PROXY}/api/download?start=${currentId}&end=${batchEnd}`);
           const data = await res.json();
 
-          if (data.rate_limited || (data.results && data.results[0]?.rate_limited)) {
-            document.getElementById("s-" + key).className = "state-item s-error";
-            log(`⚠️ Rate limited on ${state}. Resume tomorrow.`);
-            localStorage.setItem("golfadmin_idx", i);
+          if (data.rate_limited) {
+            if (batchEl) batchEl.className = "b b-e";
+            log(`⚠️ Rate limited at ID ${data.last_id}. Resume tomorrow from ID ${data.last_id}.`);
+            saveProgress(data.last_id, currentSaved);
             running = false;
             break;
           }
 
-          const found = data.found || data.total_found || data.results?.[0]?.found || 0;
-          const reqs = data.requests || data.requests_used || 0;
-          totalSaved += found;
-          totalRequests += reqs;
-          statesDone = i + 1;
+          currentSaved += (data.saved || 0);
+          const newId = batchEnd + 1;
+          saveProgress(newId, currentSaved);
 
-          document.getElementById("s-" + key).className = "state-item s-done";
-          document.getElementById("c-" + key).textContent = found + " ✓";
-          document.getElementById("statesDone").textContent = statesDone + " / 50";
-          document.getElementById("requests").textContent = totalRequests.toLocaleString();
-          document.getElementById("bar").style.width = (statesDone / 50 * 100) + "%";
+          if (batchEl) {
+            batchEl.className = "b b-d";
+            batchEl.textContent = (data.saved || 0) + "✓";
+          }
 
-          log(`✓ ${state}: ${found} courses, ${reqs} requests`);
-          localStorage.setItem("golfadmin_idx", i + 1);
+          document.getElementById("processed").textContent = batchEnd.toLocaleString();
+          document.getElementById("bar").style.width = (batchEnd / TOTAL_IDS * 100) + "%";
 
-          // Check actual DB total every 5 states
-          if (statesDone % 5 === 0) await checkTotal();
+          log(`✓ IDs ${currentId}–${batchEnd}: ${data.saved} courses (${data.not_found} empty)`);
 
-          await new Promise(r => setTimeout(r, 400));
+          currentId = newId;
+          await new Promise(r => setTimeout(r, 300));
+
         } catch (e) {
-          document.getElementById("s-" + key).className = "state-item s-error";
-          log(`✗ ${state}: ${e.message}`);
+          if (batchEl) batchEl.className = "b b-e";
+          log(`✗ Error: ${e.message}`);
+          await new Promise(r => setTimeout(r, 1000));
+          currentId = batchEnd + 1; // skip failed batch
         }
       }
 
-      if (running) {
-        await checkTotal();
-        log(`🎉 All 50 states complete!`);
-        localStorage.removeItem("golfadmin_idx");
+      if (running && currentId > TOTAL_IDS) {
+        log(`🎉 Complete! All ${TOTAL_IDS.toLocaleString()} IDs processed. ${currentSaved} courses saved.`);
       }
 
       running = false;
