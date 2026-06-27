@@ -91,10 +91,16 @@ Each term returns up to 20 courses — all saved to Supabase.</div>
 
     async function checkDB() {
       try {
-        const res = await fetch(`${SUPABASE}/rest/v1/courses?select=id&apikey=${SKEY}`);
-        const data = await res.json();
-        document.getElementById("dbTotal").textContent = data.length.toLocaleString();
-        log(`Database has ${data.length} courses total`);
+        const res = await fetch(`${SUPABASE}/rest/v1/courses?select=count`, {
+          headers: {
+            "apikey": SKEY,
+            "Prefer": "count=exact",
+            "Range": "0-0"
+          }
+        });
+        const count = res.headers.get("content-range")?.split("/")?.[1] || "?";
+        document.getElementById("dbTotal").textContent = parseInt(count).toLocaleString();
+        log(`Database has ${count} courses total`);
       } catch (e) { log("Could not check DB: " + e.message); }
     }
 
