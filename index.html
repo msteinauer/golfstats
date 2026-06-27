@@ -464,9 +464,9 @@
     function CoursesTab({ onSelectCourse }) {
       const [tab, setTab] = useState("search"); // search | custom | favorites
       const [state, setState] = useState("");
-      const [country, setCountry] = useState("United States");
+      const [country, setCountry] = useState("");
       const [query, setQuery] = useState("");
-      const [countries, setCountries] = useState(["United States"]);
+      const [countries, setCountries] = useState([]);
       const [results, setResults] = useState([]);
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState("");
@@ -492,8 +492,8 @@
         })
         .then(r => r.json())
         .then(data => {
-          const unique = [...new Set(data.map(c => c.country).filter(Boolean))].sort();
-          setCountries(unique);
+          const unique = [...new Set(data.map(c => c.country).filter(c => c && c !== "Unknown" && c !== ""))].sort();
+          setCountries(["", ...unique]);
         })
         .catch(() => {});
       }, []);
@@ -578,7 +578,7 @@
             // Name search from Supabase
             const q = query.trim();
             let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&limit=20&order=club_name.asc`;
-            if (country) url += `&country=eq.${encodeURIComponent(country)}`;
+            if (country && country !== "United States") url += `&country=eq.${encodeURIComponent(country)}`;
             if (stateAbbr) url += `&state=eq.${stateAbbr}`;
             if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
 
@@ -587,22 +587,30 @@
             const courses = rows.map(c => ({
               id: c.id, club_name: c.club_name, course_name: c.club_name,
               number_of_holes: c.number_of_holes,
-              location: { city: c.city, state: c.state },
+              location: {
+                city: c.city !== "Unknown" ? c.city : "",
+                state: c.state !== "Unknown" ? c.state : "",
+                country: c.country !== "Unknown" ? c.country : ""
+              },
               tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
             }));
 
             if (courses.length) {
               setResults(courses);
-            } else if (!country && q) {
-              // Only fall back to live API if no country filter selected
-              const apiRes = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(q + (stateAbbr ? " " + state : ""))}`);
+            } else if (q) {
+              // Fall back to live API
+              const apiQ = q + (country && country !== "United States" ? " " + country : "") + (stateAbbr ? " " + state : "");
+              const apiRes = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(apiQ)}`);
               const apiData = await apiRes.json();
               let apiCourses = apiData.courses || [];
               if (stateAbbr) apiCourses = apiCourses.filter(c => (c.location?.state||"").toUpperCase() === stateAbbr);
+              if (country && country !== "United States") {
+                apiCourses = apiCourses.filter(c => (c.location?.country||"").toLowerCase().includes(country.toLowerCase().split(" ")[0].toLowerCase()));
+              }
               setResults(apiCourses.slice(0, 20));
-              if (!apiCourses.length) setError(`No courses found for "${q}"${state ? " in " + state : ""}. Try a different name.`);
+              if (!apiCourses.length) setError(`No courses found for "${q}"${country ? " in " + country : ""}${state ? ", " + state : ""}. Try a different name.`);
             } else {
-              setError(`No courses found for "${q}"${country ? " in " + country : ""}${state ? ", " + state : ""}. Try a different name.`);
+              setError(`No courses found${country ? " in " + country : ""}${state ? ", " + state : ""}. Try typing a course name.`);
             }
           }
         } catch (e) {
@@ -697,9 +705,9 @@
               <select value={country} onChange={e => { setCountry(e.target.value); setState(""); }}
                 style={{ ...inputStyle, marginBottom: 8 }}>
                 <option value="">All Countries</option>
-                {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                {countries.filter(Boolean).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              {country === "United States" && (
+              {(country === "United States" || country === "") && (
                 <select value={state} onChange={e => setState(e.target.value)}
                   style={{ ...inputStyle, marginBottom: 8 }}>
                   <option value="">All States</option>
@@ -808,9 +816,11 @@
                   <div>
                     <div style={{ color: "#f1f5f9", fontWeight: 600, fontSize: 13 }}>{c.club_name || c.name}</div>
                     <div style={{ color: "#64748b", fontSize: 11, marginTop: 2 }}>
-                      {c.location?.city || c.city || ""}
-                      {c.location?.state ? ", " + c.location.state : ""}
-                      {c.location?.country && c.location.country !== "United States" ? " · " + c.location.country : ""}
+                      {[
+                        c.location?.city && c.location.city !== "Unknown" ? c.location.city : null,
+                        c.location?.state && c.location.state !== "Unknown" ? c.location.state : null,
+                        c.location?.country && c.location.country !== "United States" && c.location.country !== "Unknown" ? c.location.country : null,
+                      ].filter(Boolean).join(", ")}
                       {" · "}{c.number_of_holes || 18} holes
                     </div>
                   </div>
