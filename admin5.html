@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>GolfLog Admin v5</title>
+  <title>GolfLog Admin v6</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #020617; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; min-height: 100vh; padding: 20px; }
@@ -20,88 +20,74 @@
     .progress-fill { height: 100%; background: linear-gradient(90deg, #166534, #4ade80); border-radius: 8px; transition: width 0.3s; }
     .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
     .stat-val { font-weight: 800; color: #4ade80; }
-    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 160px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 8px; }
-    .term-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-height: 260px; overflow-y: auto; }
-    .t { padding: 5px; border-radius: 6px; font-size: 11px; text-align: center; font-weight: 700; }
-    .t-p { background: #1e293b; color: #475569; }
-    .t-a { background: #1e3a5f; color: #60a5fa; }
-    .t-d { background: #0c2218; color: #4ade80; }
-    .t-e { background: #1c0a0a; color: #f87171; }
-    .note { color: #4ade80; font-size: 12px; background: #0c2218; border: 1px solid #166534; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 200px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 8px; }
+    .note { color: #f59e0b; font-size: 12px; background: #1c1400; border: 1px solid #f59e0b33; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    input[type=number] { background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; padding: 8px 12px; font-size: 14px; outline: none; width: 100%; margin-bottom: 8px; }
+    label { color: #94a3b8; font-size: 11px; font-weight: 600; display: block; margin-bottom: 3px; }
   </style>
 </head>
 <body>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-    <span style="font-size:24px">⛳</span><h1>GolfLog Admin v5</h1>
+    <span style="font-size:24px">⛳</span><h1>GolfLog Admin v6</h1>
   </div>
-  <div class="sub">Download golf courses using search terms</div>
+  <div class="sub">Download all courses by ID — slow and steady</div>
 
   <div class="note">
-    ✓ Uses search API (not ID lookup) — no rate limit issues!<br>
-    Searches 65 terms (a-z + golf words) × 20 results = up to 1,300 unique courses per run.<br>
-    Run multiple times with different terms to build up the database.
+    ⚠️ Fetches 8 IDs per batch at 800ms each = ~6 seconds/batch.<br>
+    Keep the screen on and leave it running — it will work through all 30,000 IDs automatically.<br>
+    Progress saves every batch. Resume anytime!
   </div>
 
   <div class="card">
-    <div class="stat"><span>Courses Saved This Run</span><span class="stat-val" id="saved">0</span></div>
+    <div class="stat"><span>Courses Saved</span><span class="stat-val" id="saved">0</span></div>
     <div class="stat"><span>Total in Database</span><span class="stat-val" id="dbTotal">—</span></div>
-    <div class="stat"><span>Search Terms Done</span><span class="stat-val" id="termsDone">0 / 65</span></div>
-    <div class="stat"><span>Current Term</span><span class="stat-val" id="currentTerm">—</span></div>
+    <div class="stat"><span>IDs Processed</span><span class="stat-val" id="processed">0</span></div>
+    <div class="stat"><span>Next Resume ID</span><span class="stat-val" id="nextId">—</span></div>
     <div class="progress-bar"><div class="progress-fill" id="bar" style="width:0%"></div></div>
-    <button class="btn btn-green" id="startBtn" onclick="startDownload()">⬇ Download All Terms</button>
-    <button class="btn btn-red" id="stopBtn" onclick="stopDownload()" style="display:none">■ Stop</button>
-    <button class="btn btn-gray" onclick="checkDB()">🔄 Check Database Count</button>
-    <div class="log" id="log">Ready. Tap Download to begin.
-This uses the search API which has a much higher rate limit.
-Each term returns up to 20 courses — all saved to Supabase.</div>
-  </div>
 
-  <div class="card">
-    <div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:8px">SEARCH TERMS</div>
-    <div class="term-grid" id="termGrid"></div>
+    <label>Start ID (or leave as saved)</label>
+    <input type="number" id="startId" value="1" min="1" max="30000" />
+    <label>End ID</label>
+    <input type="number" id="endId" value="30000" min="1" max="30000" />
+
+    <button class="btn btn-green" id="startBtn" onclick="startDownload()">⬇ Start Download</button>
+    <button class="btn btn-red" id="stopBtn" onclick="stopDownload()" style="display:none">■ Stop & Save Progress</button>
+    <button class="btn btn-gray" onclick="resetProgress()">🔄 Reset Progress</button>
+    <button class="btn btn-gray" onclick="checkDB()">📊 Check Database Count</button>
+    <div class="log" id="log">Ready. Tap Start to begin downloading all courses by ID.
+Processes 8 IDs at a time, saves progress automatically.</div>
   </div>
 
   <script>
     const PROXY = "https://golfproxy.vercel.app";
     const SUPABASE = "https://koingualzctoyulzytxb.supabase.co";
     const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
-
-    const TERMS = [
-      "a","b","c","d","e","f","g","h","i","j","k","l","m",
-      "n","o","p","q","r","s","t","u","v","w","x","y","z",
-      "golf","club","country","links","course","creek","ridge",
-      "lake","hill","pines","oak","cedar","pine","eagle","birch",
-      "meadow","valley","river","forest","ranch","resort","national",
-      "municipal","public","royal","bay","sand","rock","stone",
-      "green","fairway","par","ace","iron","wood","wedge","driver"
-    ];
+    const SAVE_KEY = "golfadmin_v6_nextid";
+    const SAVED_KEY = "golfadmin_v6_saved";
+    const BATCH = 8; // IDs per Vercel call
+    const TOTAL = 30000;
 
     let running = false;
-    let totalSaved = 0;
+    let totalSaved = parseInt(localStorage.getItem(SAVED_KEY) || "0");
+    let nextId = parseInt(localStorage.getItem(SAVE_KEY) || "1");
 
-    // Build term grid
-    const grid = document.getElementById("termGrid");
-    TERMS.forEach((t, i) => {
-      const el = document.createElement("div");
-      el.className = "t t-p";
-      el.id = "t" + i;
-      el.textContent = t;
-      grid.appendChild(el);
-    });
+    // Init UI
+    document.getElementById("startId").value = nextId;
+    document.getElementById("saved").textContent = totalSaved.toLocaleString();
+    document.getElementById("nextId").textContent = nextId.toLocaleString();
+    document.getElementById("bar").style.width = (nextId / TOTAL * 100) + "%";
+    document.getElementById("processed").textContent = (nextId - 1).toLocaleString();
+    if (nextId > 1) log(`Resuming from ID ${nextId.toLocaleString()} (${totalSaved} courses saved so far)`);
 
     async function checkDB() {
       try {
         const res = await fetch(`${SUPABASE}/rest/v1/courses?select=count`, {
-          headers: {
-            "apikey": SKEY,
-            "Prefer": "count=exact",
-            "Range": "0-0"
-          }
+          headers: { "apikey": SKEY, "Prefer": "count=exact", "Range": "0-0" }
         });
         const count = res.headers.get("content-range")?.split("/")?.[1] || "?";
         document.getElementById("dbTotal").textContent = parseInt(count).toLocaleString();
-        log(`Database has ${count} courses total`);
-      } catch (e) { log("Could not check DB: " + e.message); }
+        log(`Database: ${count} courses`);
+      } catch (e) { log("DB check failed: " + e.message); }
     }
 
     function log(msg) {
@@ -110,78 +96,76 @@ Each term returns up to 20 courses — all saved to Supabase.</div>
       el.scrollTop = el.scrollHeight;
     }
 
+    function saveProgress(id, saved) {
+      localStorage.setItem(SAVE_KEY, id);
+      localStorage.setItem(SAVED_KEY, saved);
+      document.getElementById("nextId").textContent = id.toLocaleString();
+      document.getElementById("saved").textContent = saved.toLocaleString();
+      document.getElementById("processed").textContent = (id - 1).toLocaleString();
+      document.getElementById("bar").style.width = (id / TOTAL * 100) + "%";
+    }
+
+    function resetProgress() {
+      if (!confirm("Reset progress? Supabase data is kept.")) return;
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(SAVED_KEY);
+      location.reload();
+    }
+
     function stopDownload() {
       running = false;
-      document.getElementById("startBtn").disabled = false;
-      document.getElementById("stopBtn").style.display = "none";
-      log("⏹ Stopped.");
+      log("⏹ Stopped. Progress saved.");
     }
 
     async function startDownload() {
       running = true;
-      totalSaved = 0;
       document.getElementById("startBtn").disabled = true;
       document.getElementById("stopBtn").style.display = "block";
-      document.getElementById("saved").textContent = "0";
 
-      // Reset grid
-      TERMS.forEach((_, i) => {
-        document.getElementById("t" + i).className = "t t-p";
-      });
+      let currentId = parseInt(document.getElementById("startId").value) || nextId;
+      const endId = parseInt(document.getElementById("endId").value) || TOTAL;
+      let currentSaved = totalSaved;
 
-      log(`🚀 Starting search across ${TERMS.length} terms...`);
+      log(`🚀 Starting from ID ${currentId.toLocaleString()} to ${endId.toLocaleString()}`);
 
-      // Process in batches of 10 terms per API call
-      const BATCH = 1;
-      let termsDone = 0;
-
-      for (let i = 0; i < TERMS.length && running; i += BATCH) {
-        const end = Math.min(i + BATCH - 1, TERMS.length - 1);
-
-        // Mark active
-        for (let j = i; j <= end; j++) {
-          document.getElementById("t" + j).className = "t t-a";
-        }
-
-        document.getElementById("currentTerm").textContent = TERMS[i] + "..." + TERMS[end];
+      while (currentId <= endId && running) {
+        const batchEnd = Math.min(currentId + BATCH - 1, endId);
 
         try {
-          const res = await fetch(`${PROXY}/api/download?start=${i}&end=${end}`);
+          const res = await fetch(`${PROXY}/api/download?start=${currentId}&end=${batchEnd}&delay=800`);
           const data = await res.json();
 
           if (data.rate_limited) {
-            for (let j = i; j <= end; j++) document.getElementById("t" + j).className = "t t-e";
-            log(`⚠️ Rate limited on term "${data.last_term}". Try again later.`);
+            log(`⚠️ Rate limited at ID ${data.last_id}. Try again tomorrow.`);
+            saveProgress(data.last_id, currentSaved);
+            document.getElementById("startId").value = data.last_id;
             running = false;
             break;
           }
 
-          totalSaved += data.total_saved || 0;
-          termsDone = end + 1;
+          currentSaved += data.saved || 0;
+          const newId = batchEnd + 1;
+          saveProgress(newId, currentSaved);
+          document.getElementById("startId").value = newId;
 
-          for (let j = i; j <= end; j++) {
-            document.getElementById("t" + j).className = "t t-d";
+          if (data.saved > 0) {
+            log(`✓ IDs ${currentId}–${batchEnd}: ${data.saved} courses saved`);
           }
 
-          document.getElementById("saved").textContent = totalSaved.toLocaleString();
-          document.getElementById("termsDone").textContent = termsDone + " / " + TERMS.length;
-          document.getElementById("bar").style.width = (termsDone / TERMS.length * 100) + "%";
+          currentId = newId;
 
-          // Show per-term results
-          if (data.results) {
-            data.results.forEach(r => log(`✓ "${r.term}": ${r.found} new courses`));
-          }
-
-          await new Promise(r => setTimeout(r, 300));
+          // Check DB every 500 IDs
+          if (currentId % 500 === 1) await checkDB();
 
         } catch (e) {
-          log(`✗ Error: ${e.message}`);
-          for (let j = i; j <= end; j++) document.getElementById("t" + j).className = "t t-e";
+          log(`✗ Error at ${currentId}: ${e.message}`);
+          await new Promise(r => setTimeout(r, 2000));
+          currentId = batchEnd + 1;
         }
       }
 
-      if (running) {
-        log(`🎉 Complete! ${totalSaved} new courses saved this run.`);
+      if (running && currentId > endId) {
+        log(`🎉 Complete! Processed all IDs. ${currentSaved} courses saved.`);
         await checkDB();
       }
 
@@ -190,7 +174,6 @@ Each term returns up to 20 courses — all saved to Supabase.</div>
       document.getElementById("stopBtn").style.display = "none";
     }
 
-    // Check DB on load
     checkDB();
   </script>
 </body>
