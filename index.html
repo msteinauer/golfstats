@@ -518,17 +518,18 @@
           "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
         };
         const stateAbbr = state ? stateAbbrevs[state] : null;
+        const SURL = "https://koingualzctoyulzytxb.supabase.co";
+        const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
 
         try {
-          // If no name typed, try to load from cache first
           if (!query.trim() && stateAbbr) {
+            // State browse — check cache first
             const cacheKey = COURSE_CACHE_KEY + stateAbbr;
             try {
               const cached = localStorage.getItem(cacheKey);
               if (cached) {
                 const { courses, timestamp } = JSON.parse(cached);
-                // Cache valid for 30 days
-                if (Date.now() - timestamp < 30 * 24 * 60 * 60 * 1000) {
+                if (Date.now() - timestamp < 7 * 24 * 60 * 60 * 1000) {
                   setResults(courses.slice(0, 50));
                   setLoading(false);
                   return;
@@ -536,67 +537,62 @@
               }
             } catch {}
 
-            // Fetch courses for this state using broad common golf terms
-            // Each returns up to 20 results filtered to this state
-            setError(`Loading all courses in ${state}... please wait.`);
-            let allCourses = [];
-            const seen = new Set();
-            const broadTerms = [
-              "golf club", "golf course", "country club", "golf links",
-              "golf resort", "public golf", "golf center", "golf complex",
-              "golf & country", "golf and country"
-            ];
-            for (const term of broadTerms) {
-              try {
-                const res = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(term)}`);
-                if (!res.ok) continue;
-                const data = await res.json();
-                if (data.error) continue; // rate limit
-                const batch = (data.courses || []).filter(c => {
-                  const cs = (c.location?.state || "").toUpperCase().trim();
-                  return cs === stateAbbr && !seen.has(c.id);
-                });
-                batch.forEach(c => { seen.add(c.id); allCourses.push(c); });
-              } catch {}
-            }
-
-            allCourses.sort((a, b) => (a.club_name || "").localeCompare(b.club_name || ""));
-
-            // Save to cache
+            // Fetch from Supabase
+            setError(`Loading courses in ${state}...`);
+            const res = await fetch(
+              `${SURL}/rest/v1/courses?select=id,club_name,city,state,number_of_holes,tees&state=eq.${stateAbbr}&limit=200&order=club_name.asc`,
+              { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
+            );
+            const rows = await res.json();
+            const allCourses = rows.map(c => ({
+              id: c.id, club_name: c.club_name, course_name: c.club_name,
+              number_of_holes: c.number_of_holes,
+              location: { city: c.city, state: c.state },
+              tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
+            }));
             try {
-              localStorage.setItem(COURSE_CACHE_KEY + stateAbbr, JSON.stringify({
-                courses: allCourses,
-                timestamp: Date.now()
-              }));
+              localStorage.setItem(cacheKey, JSON.stringify({ courses: allCourses, timestamp: Date.now() }));
             } catch {}
-
             setError("");
             setResults(allCourses.slice(0, 50));
-            if (!allCourses.length) setError(`No courses found in ${state}. Type a course name to search instead.`);
+            if (!allCourses.length) setError(`No courses in ${state} yet. Try searching by name.`);
 
           } else {
-            // Name search — strict state filter
+            // Name search from Supabase
             const q = query.trim();
-            const res = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(q)}`);
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            const data = await res.json();
-            let courses = data.courses || [];
+            let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,number_of_holes,tees&limit=20&order=club_name.asc`;
+            if (stateAbbr) url += `&state=eq.${stateAbbr}`;
+            if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
 
-            // Strict state filter when state is selected
-            if (stateAbbr) {
-              courses = courses.filter(c =>
-                (c.location?.state || "").toUpperCase().trim() === stateAbbr
-              );
+            const res = await fetch(url, { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } });
+            const rows = await res.json();
+            const courses = rows.map(c => ({
+              id: c.id, club_name: c.club_name, course_name: c.club_name,
+              number_of_holes: c.number_of_holes,
+              location: { city: c.city, state: c.state },
+              tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
+            }));
+
+            // If no results in Supabase, fall back to live API
+            if (!courses.length && q) {
+              const apiRes = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(q + (stateAbbr ? " " + state : ""))}`);
+              const apiData = await apiRes.json();
+              let apiCourses = apiData.courses || [];
+              if (stateAbbr) apiCourses = apiCourses.filter(c => (c.location?.state||"").toUpperCase() === stateAbbr);
+              setResults(apiCourses.slice(0, 20));
+              if (!apiCourses.length) setError(`No courses found for "${q}"${state ? " in " + state : ""}. Try a different name.`);
+            } else {
+              setResults(courses);
+              if (!courses.length) setError(`No courses found for "${q}"${state ? " in " + state : ""}. Try a different name.`);
             }
-
-            setResults(courses.slice(0, 20));
-            if (!courses.length) setError(`No courses found for "${q}" in ${state || "your search"}. Try a different name.`);
           }
         } catch (e) {
           setError("Search failed: " + e.message);
         }
         setLoading(false);
       };
+
+
 
             const fetchCourseDetail = async (courseId) => {
         setLoading(true); setError("");
