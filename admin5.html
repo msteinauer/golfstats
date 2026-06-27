@@ -64,7 +64,7 @@ Processes 8 IDs at a time, saves progress automatically.</div>
     const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
     const SAVE_KEY = "golfadmin_v6_nextid";
     const SAVED_KEY = "golfadmin_v6_saved";
-    const BATCH = 8; // IDs per Vercel call
+    const BATCH = 4; // IDs per Vercel call
     const TOTAL = 30000;
 
     let running = false;
@@ -132,7 +132,7 @@ Processes 8 IDs at a time, saves progress automatically.</div>
         const batchEnd = Math.min(currentId + BATCH - 1, endId);
 
         try {
-          const res = await fetch(`${PROXY}/api/download?start=${currentId}&end=${batchEnd}&delay=800`);
+          const res = await fetch(`${PROXY}/api/download?start=${currentId}&end=${batchEnd}&delay=300`);
           const data = await res.json();
 
           if (data.rate_limited) {
