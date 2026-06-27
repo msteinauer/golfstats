@@ -464,7 +464,9 @@
     function CoursesTab({ onSelectCourse }) {
       const [tab, setTab] = useState("search"); // search | custom | favorites
       const [state, setState] = useState("");
+      const [country, setCountry] = useState("United States");
       const [query, setQuery] = useState("");
+      const [countries, setCountries] = useState(["United States"]);
       const [results, setResults] = useState([]);
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState("");
@@ -480,6 +482,21 @@
       const [newCourseName, setNewCourseName] = useState("");
       const [newCourseState, setNewCourseState] = useState("");
       const [newCoursePars, setNewCoursePars] = useState(Array(18).fill(4));
+
+      // Load unique countries from Supabase on mount
+      React.useEffect(() => {
+        const SURL = "https://koingualzctoyulzytxb.supabase.co";
+        const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
+        fetch(`${SURL}/rest/v1/courses?select=country&limit=1000`, {
+          headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` }
+        })
+        .then(r => r.json())
+        .then(data => {
+          const unique = [...new Set(data.map(c => c.country).filter(Boolean))].sort();
+          setCountries(unique);
+        })
+        .catch(() => {});
+      }, []);
 
       const saveFavorites = (favs) => {
         setFavorites(favs);
@@ -540,7 +557,7 @@
             // Fetch from Supabase
             setError(`Loading courses in ${state}...`);
             const res = await fetch(
-              `${SURL}/rest/v1/courses?select=id,club_name,city,state,number_of_holes,tees&state=eq.${stateAbbr}&limit=200&order=club_name.asc`,
+              `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=200&order=club_name.asc`,
               { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
             );
             const rows = await res.json();
@@ -561,6 +578,7 @@
             // Name search from Supabase
             const q = query.trim();
             let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&limit=20&order=club_name.asc`;
+            if (country) url += `&country=eq.${encodeURIComponent(country)}`;
             if (stateAbbr) url += `&state=eq.${stateAbbr}`;
             if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
 
@@ -675,13 +693,18 @@
           {/* SEARCH TAB */}
           {tab === "search" && (
             <div>
-              <select value={state} onChange={e => setState(e.target.value)}
+              <select value={country} onChange={e => { setCountry(e.target.value); setState(""); }}
                 style={{ ...inputStyle, marginBottom: 8 }}>
-                <option value="">All / International</option>
-                <optgroup label="── US States ──">
-                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                </optgroup>
+                <option value="">All Countries</option>
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              {country === "United States" && (
+                <select value={state} onChange={e => setState(e.target.value)}
+                  style={{ ...inputStyle, marginBottom: 8 }}>
+                  <option value="">All States</option>
+                  {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              )}
               <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input value={query} onChange={e => setQuery(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && searchCourses()}
