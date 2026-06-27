@@ -560,7 +560,7 @@
           } else {
             // Name search from Supabase
             const q = query.trim();
-            let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,number_of_holes,tees&limit=20&order=club_name.asc`;
+            let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&limit=20&order=club_name.asc`;
             if (stateAbbr) url += `&state=eq.${stateAbbr}`;
             if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
 
@@ -677,8 +677,10 @@
             <div>
               <select value={state} onChange={e => setState(e.target.value)}
                 style={{ ...inputStyle, marginBottom: 8 }}>
-                <option value="">Select a state...</option>
+                <option value="">All / International</option>
+                <optgroup label="── US States ──">
                 {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                </optgroup>
               </select>
               <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input value={query} onChange={e => setQuery(e.target.value)}
@@ -781,7 +783,12 @@
                 }}>
                   <div>
                     <div style={{ color: "#f1f5f9", fontWeight: 600, fontSize: 13 }}>{c.club_name || c.name}</div>
-                    <div style={{ color: "#64748b", fontSize: 11, marginTop: 2 }}>{c.location?.city || c.city || ""}{c.location?.state ? ", " + c.location.state : ""} · {c.number_of_holes || 18} holes</div>
+                    <div style={{ color: "#64748b", fontSize: 11, marginTop: 2 }}>
+                      {c.location?.city || c.city || ""}
+                      {c.location?.state ? ", " + c.location.state : ""}
+                      {c.location?.country && c.location.country !== "United States" ? " · " + c.location.country : ""}
+                      {" · "}{c.number_of_holes || 18} holes
+                    </div>
                   </div>
                   <span style={{ color: "#4ade80", fontSize: 18 }}>›</span>
                 </button>
