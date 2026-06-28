@@ -656,12 +656,19 @@
         let pars = Array(18).fill(4);
         let holes = [];
 
-        // API structure: course.tees.male[0].holes or course.tees.female[0].holes
-        if (course.tees) {
-          const teeGroups = course.tees.male || course.tees.female || [];
+        // Parse tees if stored as string (from Supabase)
+        let tees = course.tees;
+        if (typeof tees === "string") {
+          try { tees = JSON.parse(tees); } catch { tees = {}; }
+        }
+
+        // API structure: tees.male[0].holes or tees.female[0].holes
+        if (tees) {
+          const teeGroups = tees.male || tees.female || [];
           if (Array.isArray(teeGroups) && teeGroups.length) {
-            // Pick the first tee set (usually the championship tees)
-            holes = teeGroups[0].holes || [];
+            // Find 18-hole tee set, preferring male tees
+            const eightteen = teeGroups.find(t => t.number_of_holes === 18) || teeGroups[0];
+            holes = eightteen.holes || [];
           }
         }
 
