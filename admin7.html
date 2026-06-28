@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>GolfLog Admin v7</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #020617; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; min-height: 100vh; padding: 20px; }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+    .btn-green { background: #166534; color: #4ade80; }
+    .btn-green:disabled { background: #1e293b; color: #475569; cursor: not-allowed; }
+    .btn-red { background: #7f1d1d; color: #f87171; }
+    .btn-gray { background: #1e293b; color: #94a3b8; }
+    .progress-bar { background: #1e293b; border-radius: 8px; height: 12px; margin: 10px 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #166534, #4ade80); border-radius: 8px; transition: width 0.3s; }
+    .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .stat-val { font-weight: 800; color: #4ade80; }
+    .log { background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; font-size: 11px; color: #64748b; height: 200px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 8px; }
+    .note { color: #f59e0b; font-size: 12px; background: #1c1400; border: 1px solid #f59e0b33; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    input[type=number] { background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; padding: 8px 12px; font-size: 14px; outline: none; width: 100%; margin-bottom: 8px; }
+    label { color: #94a3b8; font-size: 11px; font-weight: 600; display: block; margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <span style="font-size:24px">⛳</span><h1>GolfLog Admin v7</h1>
+  </div>
+  <div class="sub">Download all courses by ID — slow and steady</div>
+
+  <div class="note">
+    ⚠️ Fetches 8 IDs per batch at 800ms each = ~6 seconds/batch.<br>
+    Keep the screen on and leave it running — it will work through all 30,000 IDs automatically.<br>
+    Progress saves every batch. Resume anytime!
+  </div>
+
+  <div class="card">
+    <div class="stat"><span>Courses Saved</span><span class="stat-val" id="saved">0</span></div>
+    <div class="stat"><span>Total in Database</span><span class="stat-val" id="dbTotal">—</span></div>
+    <div class="stat"><span>IDs Processed</span><span class="stat-val" id="processed">0</span></div>
+    <div class="stat"><span>Next Resume ID</span><span class="stat-val" id="nextId">—</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="bar" style="width:0%"></div></div>
+
+    <label>Start ID (or leave as saved)</label>
+    <input type="number" id="startId" value="1" min="1" max="30000" />
+    <label>End ID</label>
+    <input type="number" id="endId" value="30000" min="1" max="30000" />
+
+    <button class="btn btn-green" id="startBtn" onclick="startDownload()">⬇ Start Download</button>
+    <button class="btn btn-red" id="stopBtn" onclick="stopDownload()" style="display:none">■ Stop & Save Progress</button>
+    <button class="btn btn-gray" onclick="resetProgress()">🔄 Reset Progress</button>
+    <button class="btn btn-gray" onclick="checkDB()">📊 Check Database Count</button>
+    <div class="log" id="log">Ready. Tap Start to begin downloading all courses by ID.
+Processes 8 IDs at a time, saves progress automatically.</div>
+  </div>
+
+  <script>
+    const PROXY = "https://golfproxy.vercel.app";
+    const SUPABASE = "https://koingualzctoyulzytxb.supabase.co";
+    const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
+    const SAVE_KEY = "golfadmin_v7_nextid";
+    const SAVED_KEY = "golfadmin_v7_saved";
+    const BATCH = 4; // IDs per Vercel call
+    const TOTAL = 30000;
+
+    let running = false;
+    let totalSaved = parseInt(localStorage.getItem(SAVED_KEY) || "0");
+    let nextId = parseInt(localStorage.getItem(SAVE_KEY) || "13000");
+
+    // Init UI
+    document.getElementById("startId").value = nextId;
+    document.getElementById("saved").textContent = totalSaved.toLocaleString();
+    document.getElementById("nextId").textContent = nextId.toLocaleString();
+    document.getElementById("bar").style.width = (nextId / TOTAL * 100) + "%";
+    document.getElementById("processed").textContent = (nextId - 1).toLocaleString();
+    if (nextId > 1) log(`Resuming from ID ${nextId.toLocaleString()} (${totalSaved} courses saved so far)`);
+
+    async function checkDB() {
+      try {
+        const res = await fetch(`${SUPABASE}/rest/v1/courses?select=count`, {
+          headers: { "apikey": SKEY, "Prefer": "count=exact", "Range": "0-0" }
+        });
+        const count = res.headers.get("content-range")?.split("/")?.[1] || "?";
+        document.getElementById("dbTotal").textContent = parseInt(count).toLocaleString();
+        log(`Database: ${count} courses`);
+      } catch (e) { log("DB check failed: " + e.message); }
+    }
+
+    function log(msg) {
+      const el = document.getElementById("log");
+      el.textContent += "\n" + new Date().toLocaleTimeString() + " " + msg;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function saveProgress(id, saved) {
+      localStorage.setItem(SAVE_KEY, id);
+      localStorage.setItem(SAVED_KEY, saved);
+      document.getElementById("nextId").textContent = id.toLocaleString();
+      document.getElementById("saved").textContent = saved.toLocaleString();
+      document.getElementById("processed").textContent = (id - 1).toLocaleString();
+      document.getElementById("bar").style.width = (id / TOTAL * 100) + "%";
+    }
+
+    function resetProgress() {
+      if (!confirm("Reset progress? Supabase data is kept.")) return;
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(SAVED_KEY);
+      location.reload();
+    }
+
+    function stopDownload() {
+      running = false;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").style.display = "none";
+      log("⏹ Stopped. Progress saved.");
+    }
+
+    async function startDownload() {
+      running = true;
+      document.getElementById("startBtn").disabled = true;
+      document.getElementById("stopBtn").style.display = "block";
+
+      let currentId = parseInt(document.getElementById("startId").value) || nextId;
+      const endId = parseInt(document.getElementById("endId").value) || TOTAL;
+      let currentSaved = totalSaved;
+
+      log(`🚀 Starting from ID ${currentId.toLocaleString()} to ${endId.toLocaleString()}`);
+
+      while (currentId <= endId && running) {
+        const batchEnd = Math.min(currentId + BATCH - 1, endId);
+
+        try {
+          const res = await fetch(`${PROXY}/api/download?start=${currentId}&end=${batchEnd}&delay=300`);
+          const data = await res.json();
+
+          if (data.rate_limited) {
+            saveProgress(data.last_id, currentSaved);
+            document.getElementById("startId").value = data.last_id;
+            currentId = data.last_id;
+            log(`⏳ Rate limited at ID ${data.last_id}. Waiting 15 seconds...`);
+            await new Promise(r => setTimeout(r, 15000));
+            log(`▶ Resuming from ID ${data.last_id}...`);
+            continue;
+          }
+
+          currentSaved += data.saved || 0;
+          const newId = batchEnd + 1;
+          saveProgress(newId, currentSaved);
+          document.getElementById("startId").value = newId;
+
+          if (data.saved > 0) {
+            log(`✓ IDs ${currentId}–${batchEnd}: ${data.saved} courses saved`);
+          }
+
+          currentId = newId;
+
+          // Check DB every 500 IDs
+          if (currentId % 500 === 1) await checkDB();
+
+        } catch (e) {
+          log(`✗ Error at ${currentId}: ${e.message}`);
+          await new Promise(r => setTimeout(r, 2000));
+          currentId = batchEnd + 1;
+        }
+      }
+
+      if (running && currentId > endId) {
+        log(`🎉 Complete! Processed all IDs. ${currentSaved} courses saved.`);
+        await checkDB();
+      }
+
+      running = false;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").style.display = "none";
+    }
+
+    checkDB();
+  </script>
+</body>
+</html>
