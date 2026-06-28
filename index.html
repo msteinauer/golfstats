@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v13</title>
+  <title>GolfLog v14</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -674,6 +674,7 @@
       const [results, setResults] = useState([]);
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState("");
+      const [selectedTee, setSelectedTee] = useState(null);
       const [selectedCourse, setSelectedCourse] = useState(null);
       const [favorites, setFavorites] = useState(() => {
         try { return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []; } catch { return []; }
@@ -852,7 +853,7 @@
         if (typeof courseData.tees === "string") {
           try { courseData.tees = JSON.parse(courseData.tees); } catch { courseData.tees = {}; }
         }
-        setSelectedCourse(courseData);
+        setSelectedCourse(courseData); setSelectedTee(null);
         } catch {
           setError("Could not load course details.");
         }
@@ -992,25 +993,59 @@
                       <div style={{ color: "#f1f5f9", fontWeight: 700, fontSize: 14 }}>{selectedCourse.club_name || selectedCourse.name}</div>
                       <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2 }}>{selectedCourse.city}, {selectedCourse.state || state}</div>
                     </div>
-                    <button onClick={() => setSelectedCourse(null)} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 18, cursor: "pointer" }}>✕</button>
+                    <button onClick={() => { setSelectedCourse(null); setSelectedTee(null); }} style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 18, cursor: "pointer" }}>✕</button>
                   </div>
                   {(() => {
-                    let holes = [];
-                    if (selectedCourse.tees) {
-                      const teeGroups = selectedCourse.tees.male || selectedCourse.tees.female || [];
-                      if (Array.isArray(teeGroups) && teeGroups.length) holes = teeGroups[0].holes || [];
-                    }
-                    if (!holes.length) holes = selectedCourse.holes || [];
+                    // Parse tees
+                    let tees = selectedCourse.tees;
+                    if (typeof tees === "string") { try { tees = JSON.parse(tees); } catch { tees = {}; } }
+                    // Build a flat list of all tee options (male + female), labeled
+                    const allTees = [];
+                    if (tees && tees.male) tees.male.forEach(t => allTees.push({ ...t, gender: "M" }));
+                    if (tees && tees.female) tees.female.forEach(t => allTees.push({ ...t, gender: "F" }));
+                    // Only show real 18-hole tees
+                    const valid = allTees.filter(t => t.holes && t.holes.length >= 18);
+                    // Pick default tee: the selected one, or the longest male
+                    const activeTee = selectedTee || valid.find(t => t.gender === "M") || valid[0];
+                    const holes = activeTee ? activeTee.holes : (selectedCourse.holes || []);
                     return (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 4, marginBottom: 10 }}>
-                        {holes.slice(0, 18).map((h, i) => (
-                          <div key={i} style={{ textAlign: "center" }}>
-                            <div style={{ color: "#94a3b8", fontSize: 9, fontWeight: 600 }}>{i+1}</div>
-                            <div style={{ background: "#26395a", borderRadius: 4, padding: "3px 0", color: "#4ade80", fontSize: 12, fontWeight: 700 }}>{h.par || "?"}</div>
+                      <React.Fragment>
+                        {valid.length > 0 && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6 }}>SELECT TEES</div>
+                            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+                              {valid.map((t, ti) => {
+                                const isActive = activeTee && t.tee_name === activeTee.tee_name && t.gender === activeTee.gender && t.total_yards === activeTee.total_yards;
+                                return (
+                                  <button key={ti} onClick={() => setSelectedTee(t)}
+                                    style={{ flexShrink: 0, padding: "8px 12px", borderRadius: 10, border: isActive ? "2px solid #4ade80" : "1px solid #3d5478", background: isActive ? "#166534" : "#26395a", color: isActive ? "#4ade80" : "#cbd5e1", cursor: "pointer", textAlign: "left" }}>
+                                    <div style={{ fontSize: 12, fontWeight: 700 }}>{t.tee_name} {t.gender === "F" ? "♀" : ""}</div>
+                                    <div style={{ fontSize: 10, opacity: 0.8, marginTop: 1 }}>{t.total_yards} yds</div>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        ))}
-                        {!holes.length && <div style={{ gridColumn: "span 9", color: "#94a3b8", fontSize: 11, padding: "8px 0" }}>Par data not available</div>}
-                      </div>
+                        )}
+                        {activeTee && (
+                          <div style={{ display: "flex", gap: 14, marginBottom: 10, padding: "8px 12px", background: "#16213a", borderRadius: 10, fontSize: 11 }}>
+                            <div><span style={{ color: "#94a3b8" }}>Rating </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.course_rating || "—"}</span></div>
+                            <div><span style={{ color: "#94a3b8" }}>Slope </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.slope_rating || "—"}</span></div>
+                            <div><span style={{ color: "#94a3b8" }}>Yards </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.total_yards || "—"}</span></div>
+                            <div><span style={{ color: "#94a3b8" }}>Par </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.par_total || "—"}</span></div>
+                          </div>
+                        )}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 4, marginBottom: 6 }}>
+                          {holes.slice(0, 18).map((h, i) => (
+                            <div key={i} style={{ textAlign: "center" }}>
+                              <div style={{ color: "#94a3b8", fontSize: 9, fontWeight: 600 }}>{i+1}</div>
+                              <div style={{ background: "#26395a", borderRadius: 4, padding: "3px 0", color: "#4ade80", fontSize: 12, fontWeight: 700 }}>{h.par || "?"}</div>
+                              {h.yardage ? <div style={{ color: "#7c8db0", fontSize: 8, marginTop: 1 }}>{h.yardage}</div> : null}
+                            </div>
+                          ))}
+                          {!holes.length && <div style={{ gridColumn: "span 9", color: "#94a3b8", fontSize: 11, padding: "8px 0" }}>Par data not available</div>}
+                        </div>
+                      </React.Fragment>
                     );
                   })()}
                   {selectedCourse._debugKeys && (
@@ -1021,7 +1056,14 @@
                     </div>
                   )}
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => applyCoursePars(selectedCourse)} style={{
+                    <button onClick={() => {
+                      // Apply the selected tee's holes if one is chosen
+                      if (selectedTee && selectedTee.holes) {
+                        applyCoursePars({ ...selectedCourse, tees: { male: [selectedTee] } });
+                      } else {
+                        applyCoursePars(selectedCourse);
+                      }
+                    }} style={{
                       flex: 2, padding: "10px", background: "#166534", border: "none",
                       borderRadius: 8, color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer",
                     }}>✓ Use This Course</button>
@@ -1040,12 +1082,12 @@
                 <button key={i} onClick={() => {
                     // If we already have tees data from Supabase, use it directly
                     if (c.tees && typeof c.tees === "object" && Object.keys(c.tees).length > 0) {
-                      setSelectedCourse(c);
+                      setSelectedCourse(c); setSelectedTee(null);
                     } else if (c.tees && typeof c.tees === "string") {
                       try {
                         const parsed = JSON.parse(c.tees);
                         if (Object.keys(parsed).length > 0) {
-                          setSelectedCourse({...c, tees: parsed});
+                          setSelectedCourse({...c, tees: parsed}); setSelectedTee(null);
                           return;
                         }
                       } catch {}
@@ -1434,7 +1476,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v13</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v14</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1651,7 +1693,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "13";
+      var CURRENT_VERSION = "14";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
