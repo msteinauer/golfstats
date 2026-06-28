@@ -1485,5 +1485,28 @@
 
     ReactDOM.createRoot(document.getElementById("root")).render(<GolfStatsApp />);
   </script>
+
+  <script>
+    // Auto-update: check for new version every 60s and on focus
+    (function() {
+      var CURRENT_VERSION = "7";
+      async function checkVersion() {
+        try {
+          var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+          if (!res.ok) return;
+          var data = await res.json();
+          if (data.version && String(data.version) !== CURRENT_VERSION) {
+            // New version available - reload from server
+            window.location.reload(true);
+          }
+        } catch (e) {}
+      }
+      // Check on load, on focus, and periodically
+      window.addEventListener("focus", checkVersion);
+      setInterval(checkVersion, 60000);
+      checkVersion();
+    })();
+  </script>
+
 </body>
 </html>
