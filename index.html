@@ -661,8 +661,6 @@
         if (typeof tees === "string") {
           try { tees = JSON.parse(tees); } catch { tees = {}; }
         }
-        // DEBUG - remove after testing
-        setError("TEES TYPE: " + typeof tees + " | KEYS: " + (tees ? Object.keys(tees).join(",") : "null") + " | MALE LEN: " + (tees?.male?.length || 0));
 
         // API structure: tees.male[0].holes or tees.female[0].holes
         if (tees) {
@@ -876,7 +874,25 @@
                     <span style={{ color: "#fbbf24", fontSize: 16 }}>★</span>
                   </div>
                   <div style={{ borderTop: "1px solid #1e293b", display: "flex" }}>
-                    <button onClick={() => applyCoursePars(c)} style={{
+                    <button onClick={async () => {
+                      // If tees is missing or empty, fetch from Supabase first
+                      let course = c;
+                      const tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
+                      if (!tees.male && !tees.female) {
+                        try {
+                          const res = await fetch(
+                            `https://koingualzctoyulzytxb.supabase.co/rest/v1/courses?select=tees&id=eq.${c.id}&limit=1`,
+                            { headers: { "apikey": "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV", "Authorization": "Bearer sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV" } }
+                          );
+                          const rows = await res.json();
+                          if (rows[0]?.tees) {
+                            const freshTees = typeof rows[0].tees === "string" ? JSON.parse(rows[0].tees) : rows[0].tees;
+                            course = {...c, tees: freshTees};
+                          }
+                        } catch {}
+                      }
+                      applyCoursePars(course);
+                    }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
                       color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer",
                     }}>✓ Use Course</button>
