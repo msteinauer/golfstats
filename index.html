@@ -639,7 +639,13 @@
           const res = await fetch(`https://golfproxy.vercel.app/api/course?id=${courseId}`);
           if (!res.ok) throw new Error("HTTP " + res.status);
           const data = await res.json();
-          setSelectedCourse(data.course || data);
+          // Unwrap course object
+        const courseData = data.course || data;
+        // If tees is a string (from Supabase), parse it
+        if (typeof courseData.tees === "string") {
+          try { courseData.tees = JSON.parse(courseData.tees); } catch { courseData.tees = {}; }
+        }
+        setSelectedCourse(courseData);
         } catch {
           setError("Could not load course details.");
         }
@@ -805,7 +811,23 @@
 
               {/* Results list */}
               {!selectedCourse && results.map((c, i) => (
-                <button key={i} onClick={() => fetchCourseDetail(c.id || c.club_id)} style={{
+                <button key={i} onClick={() => {
+                    // If we already have tees data from Supabase, use it directly
+                    if (c.tees && typeof c.tees === "object" && Object.keys(c.tees).length > 0) {
+                      setSelectedCourse(c);
+                    } else if (c.tees && typeof c.tees === "string") {
+                      try {
+                        const parsed = JSON.parse(c.tees);
+                        if (Object.keys(parsed).length > 0) {
+                          setSelectedCourse({...c, tees: parsed});
+                          return;
+                        }
+                      } catch {}
+                      fetchCourseDetail(c.id || c.club_id);
+                    } else {
+                      fetchCourseDetail(c.id || c.club_id);
+                    }
+                  }} style={{
                   width: "100%", background: "#0f172a", border: "1px solid #1e293b",
                   borderRadius: 10, padding: "12px 14px", marginBottom: 8,
                   textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
