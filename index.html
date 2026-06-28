@@ -664,11 +664,17 @@
 
         // API structure: tees.male[0].holes or tees.female[0].holes
         if (tees) {
+          // Prefer male tees, fall back to female
           const teeGroups = tees.male || tees.female || [];
           if (Array.isArray(teeGroups) && teeGroups.length) {
-            // Find 18-hole tee set, preferring male tees
-            const eightteen = teeGroups.find(t => t.number_of_holes === 18) || teeGroups[0];
-            holes = eightteen.holes || [];
+            // Find 18-hole tee set with most yards (championship tees)
+            const eighteenHole = teeGroups.filter(t => 
+              t.number_of_holes === 18 && t.holes && t.holes.length >= 18
+            );
+            const best = eighteenHole.length > 0
+              ? eighteenHole.reduce((a, b) => (b.total_yards || 0) > (a.total_yards || 0) ? b : a)
+              : teeGroups.find(t => t.holes && t.holes.length >= 18) || teeGroups[0];
+            holes = best.holes || [];
           }
         }
 
