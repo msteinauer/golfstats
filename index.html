@@ -557,7 +557,7 @@
             // Fetch from Supabase
             setError(`Loading courses in ${state}...`);
             const res = await fetch(
-              `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=200&order=club_name.asc`,
+              `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=500&order=club_name.asc`,
               { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
             );
             const rows = await res.json();
@@ -571,7 +571,7 @@
               localStorage.setItem(cacheKey, JSON.stringify({ courses: allCourses, timestamp: Date.now() }));
             } catch {}
             setError("");
-            setResults(allCourses.slice(0, 50));
+            setResults(allCourses.slice(0, 200));
             if (!allCourses.length) setError(`No courses in ${state} yet. Try searching by name.`);
 
           } else {
