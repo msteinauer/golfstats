@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v10</title>
+  <title>GolfLog v11</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -410,27 +410,22 @@
 
               {/* SCORE */}
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
-                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => {
-                  const diff = n - hole.par;
-                  let bg = "#26395a", color = "#f1f5f9";
-                  const selected = String(hole.score) === String(n);
-                  if (selected) { bg = "#16a34a"; color = "#ffffff"; }
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.score || ""}
+                  onChange={e => onChange({ ...hole, score: e.target.value })} placeholder="—" autoFocus
+                  style={{ flex: 1, height: 64, borderRadius: 14, background: "#26395a", border: "2px solid #16a34a", color: "#ffffff", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
+                {hole.score && (() => {
+                  const diff = Number(hole.score) - hole.par;
                   let label = "";
                   if (diff <= -2) label = "Eagle";
                   else if (diff === -1) label = "Birdie";
                   else if (diff === 0) label = "Par";
                   else if (diff === 1) label = "Bogey";
-                  else if (diff === 2) label = "Dbl";
-                  else if (diff === 3) label = "Trpl";
-                  return (
-                    <button key={n} onClick={() => onChange({ ...hole, score: String(n) })}
-                      style={{ height: 56, borderRadius: 12, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: bg, color, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>{n}</span>
-                      {label && <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.85 }}>{label}</span>}
-                    </button>
-                  );
-                })}
+                  else if (diff === 2) label = "Double";
+                  else if (diff === 3) label = "Triple";
+                  else if (diff > 3) label = "+" + diff;
+                  return label ? <span style={{ color: "#4ade80", fontSize: 18, fontWeight: 700, minWidth: 70 }}>{label}</span> : null;
+                })()}
               </div>
 
               {/* PUTTS */}
@@ -565,25 +560,22 @@
 
               {/* SCORE */}
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
-                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => {
-                  const diff = n - hole.par;
-                  const selected = String(hole.chgsScore) === String(n);
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""}
+                  onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—" autoFocus
+                  style={{ flex: 1, height: 64, borderRadius: 14, background: "#26395a", border: "2px solid #2563eb", color: "#ffffff", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
+                {hole.chgsScore && (() => {
+                  const diff = Number(hole.chgsScore) - hole.par;
                   let label = "";
                   if (diff <= -2) label = "Eagle";
                   else if (diff === -1) label = "Birdie";
                   else if (diff === 0) label = "Par";
                   else if (diff === 1) label = "Bogey";
-                  else if (diff === 2) label = "Dbl";
-                  else if (diff === 3) label = "Trpl";
-                  return (
-                    <button key={n} onClick={() => onChange({ ...hole, chgsScore: String(n), score: String(n) })}
-                      style={{ height: 56, borderRadius: 12, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? "#2563eb" : "#26395a", color: "#ffffff", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>{n}</span>
-                      {label && <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.85 }}>{label}</span>}
-                    </button>
-                  );
-                })}
+                  else if (diff === 2) label = "Double";
+                  else if (diff === 3) label = "Triple";
+                  else if (diff > 3) label = "+" + diff;
+                  return label ? <span style={{ color: "#60a5fa", fontSize: 18, fontWeight: 700, minWidth: 70 }}>{label}</span> : null;
+                })()}
               </div>
 
               {/* PUTTS */}
@@ -1442,7 +1434,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v10</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v11</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1659,7 +1651,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "10";
+      var CURRENT_VERSION = "11";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
