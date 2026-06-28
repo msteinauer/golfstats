@@ -661,6 +661,8 @@
         if (typeof tees === "string") {
           try { tees = JSON.parse(tees); } catch { tees = {}; }
         }
+        // DEBUG - remove after testing
+        setError("TEES TYPE: " + typeof tees + " | KEYS: " + (tees ? Object.keys(tees).join(",") : "null") + " | MALE LEN: " + (tees?.male?.length || 0));
 
         // API structure: tees.male[0].holes or tees.female[0].holes
         if (tees) {
