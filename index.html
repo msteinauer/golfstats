@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v9</title>
+  <title>GolfLog v10</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -398,42 +398,90 @@
           </div>
         </div>
         {showScorePad && (
-          <div onClick={() => setShowScorePad(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: "#1a2942", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid #26395a" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div onClick={() => setShowScorePad(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "#1a2942", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid #26395a", maxHeight: "88vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
-                  <div style={{ color: "#4ade80", fontSize: 13, fontWeight: 700 }}>HOLE {holeNum} · PAR {hole.par}</div>
-                  <div style={{ color: "#94a3b8", fontSize: 12 }}>Tap your score</div>
+                  <div style={{ color: "#4ade80", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "#94a3b8", fontSize: 12 }}>Enter your stats</div>
                 </div>
-                <button onClick={() => setShowScorePad(false)} style={{ background: "#26395a", border: "none", color: "#94a3b8", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
+                <button onClick={() => setShowScorePad(false)} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "55vh", overflowY: "auto" }}>
+
+              {/* SCORE */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => {
                   const diff = n - hole.par;
-                  let bg = "#26395a", color = "#f1f5f9", accent = "#94a3b8";
-                  const selected = hole.score === String(n) || hole.score === n;
-                  if (selected) { bg = "#166534"; color = "#4ade80"; accent = "#4ade80"; }
+                  let bg = "#26395a", color = "#f1f5f9";
+                  const selected = String(hole.score) === String(n);
+                  if (selected) { bg = "#16a34a"; color = "#ffffff"; }
                   let label = "";
-                  if (diff <= -3) label = "Albatross";
-                  else if (diff === -2) label = "Eagle";
+                  if (diff <= -2) label = "Eagle";
                   else if (diff === -1) label = "Birdie";
                   else if (diff === 0) label = "Par";
                   else if (diff === 1) label = "Bogey";
-                  else if (diff === 2) label = "Double Bogey";
-                  else if (diff === 3) label = "Triple Bogey";
-                  else if (diff > 3) label = "+" + diff;
+                  else if (diff === 2) label = "Dbl";
+                  else if (diff === 3) label = "Trpl";
                   return (
-                    <button key={n} onClick={() => { onChange({ ...hole, score: String(n) }); setShowScorePad(false); }}
-                      style={{ height: 56, borderRadius: 12, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: bg, color, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px" }}>
-                      <span style={{ fontSize: 28, fontWeight: 800 }}>{n}</span>
-                      {label && <span style={{ fontSize: 14, fontWeight: 600, color: accent }}>{label}</span>}
+                    <button key={n} onClick={() => onChange({ ...hole, score: String(n) })}
+                      style={{ height: 56, borderRadius: 12, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: bg, color, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>{n}</span>
+                      {label && <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.85 }}>{label}</span>}
                     </button>
                   );
                 })}
               </div>
-              <button onClick={() => { onChange({ ...hole, score: "" }); setShowScorePad(false); }}
-                style={{ width: "100%", marginTop: 12, height: 44, borderRadius: 12, border: "1px solid #3d5478", background: "transparent", color: "#94a3b8", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                Clear score
+
+              {/* PUTTS */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[0,1,2,3,4,5].map(n => {
+                  const selected = String(hole.putts) === String(n);
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, putts: String(n) })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: selected ? "#16a34a" : "#26395a", color: selected ? "#ffffff" : "#f1f5f9", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* FAIRWAY - only for par 4/5 */}
+              {hole.par !== 3 && (
+                <React.Fragment>
+                  <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
+                    {[["left","◀ Left","#26395a"],["hit","Hit","#16a34a"],["right","Right ▶","#26395a"]].map(([val,lbl,selBg]) => {
+                      const selected = hole.fairway === val;
+                      return (
+                        <button key={val} onClick={() => onChange({ ...hole, fairway: selected ? null : val })}
+                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "#26395a", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                          {lbl}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </React.Fragment>
+              )}
+
+              {/* GIR */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN IN REGULATION</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,selBg]) => {
+                  const selected = hole.gir === val;
+                  return (
+                    <button key={String(val)} onClick={() => onChange({ ...hole, gir: selected ? null : val })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid #3d5478", background: selected ? selBg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button onClick={() => setShowScorePad(false)}
+                style={{ width: "100%", height: 52, borderRadius: 14, border: "none", background: "#16a34a", color: "#ffffff", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>
+                Done
               </button>
             </div>
           </div>
@@ -445,11 +493,13 @@
     // ── CHGSHoleCard ─────────────────────────────────────────────────
     function CHGSHoleCard({ hole, holeNum, onChange }) {
       const isParThree = hole.par === 3;
+      const [showPad, setShowPad] = React.useState(false);
       return (
+        <React.Fragment>
         <div style={{ background: "#1a2942", borderRadius: 14, padding: "13px 15px", border: "1px solid #1e3a5f", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 8, background: "#1e3a5f", color: "#60a5fa", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>{holeNum}</div>
+              <button onClick={() => setShowPad(true)} style={{ width: 40, height: 40, borderRadius: 10, background: "#2563eb", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,99,235,0.4)" }}>{holeNum}</button>
               <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 600 }}>Par {hole.par}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -502,6 +552,122 @@
             </div>
           </div>
         </div>
+        {showPad && (
+          <div onClick={() => setShowPad(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: "#1a2942", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid #1e3a5f", maxHeight: "88vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+                <div>
+                  <div style={{ color: "#60a5fa", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "#94a3b8", fontSize: 12 }}>Enter your CHGS stats</div>
+                </div>
+                <button onClick={() => setShowPad(false)} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
+              </div>
+
+              {/* SCORE */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => {
+                  const diff = n - hole.par;
+                  const selected = String(hole.chgsScore) === String(n);
+                  let label = "";
+                  if (diff <= -2) label = "Eagle";
+                  else if (diff === -1) label = "Birdie";
+                  else if (diff === 0) label = "Par";
+                  else if (diff === 1) label = "Bogey";
+                  else if (diff === 2) label = "Dbl";
+                  else if (diff === 3) label = "Trpl";
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, chgsScore: String(n), score: String(n) })}
+                      style={{ height: 56, borderRadius: 12, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? "#2563eb" : "#26395a", color: "#ffffff", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>{n}</span>
+                      {label && <span style={{ fontSize: 9, fontWeight: 600, opacity: 0.85 }}>{label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* PUTTS */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[0,1,2,3,4,5].map(n => {
+                  const selected = String(hole.chgsPutts) === String(n);
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, chgsPutts: String(n) })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? "#2563eb" : "#26395a", color: "#ffffff", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* FAIRWAY - par 4/5 only */}
+              {!isParThree && (
+                <React.Fragment>
+                  <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
+                    {[["left","◀ Left"],["hit","✓ Hit"],["right","Right ▶"]].map(([val,lbl]) => {
+                      const selected = hole.chgsFairway === val;
+                      return (
+                        <button key={val} onClick={() => onChange({ ...hole, chgsFairway: selected ? null : val, fairway: selected ? null : val })}
+                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "#26395a", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                          {lbl}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </React.Fragment>
+              )}
+
+              {/* GREEN -80 */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN HIT (under 80 yds)</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"]].map(([val,lbl,bg]) => {
+                  const selected = hole.greenMinus80 === val;
+                  return (
+                    <button key={String(val)} onClick={() => onChange({ ...hole, greenMinus80: selected ? null : val })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* GREEN +80 */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN HIT (over 80 yds)</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"]].map(([val,lbl,bg]) => {
+                  const selected = hole.greenPlus80 === val;
+                  return (
+                    <button key={String(val)} onClick={() => onChange({ ...hole, greenPlus80: selected ? null : val })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* UP AND DOWN */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>UP &amp; DOWN</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 24 }}>
+                {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,bg]) => {
+                  const selected = hole.upAndDown === val;
+                  return (
+                    <button key={String(val)} onClick={() => onChange({ ...hole, upAndDown: selected ? null : val })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button onClick={() => setShowPad(false)}
+                style={{ width: "100%", height: 52, borderRadius: 14, border: "none", background: "#2563eb", color: "#ffffff", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>
+                Done
+              </button>
+            </div>
+          </div>
+        )}
+        </React.Fragment>
       );
     }
 
@@ -1276,7 +1442,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v9</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v10</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1493,7 +1659,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "9";
+      var CURRENT_VERSION = "10";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
