@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v11</title>
+  <title>GolfLog v12</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -562,7 +562,7 @@
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""}
-                  onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—" autoFocus
+                  onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="\u2014" autoFocus
                   style={{ flex: 1, height: 64, borderRadius: 14, background: "#26395a", border: "2px solid #2563eb", color: "#ffffff", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
                 {hole.chgsScore && (() => {
                   const diff = Number(hole.chgsScore) - hole.par;
@@ -578,26 +578,12 @@
                 })()}
               </div>
 
-              {/* PUTTS */}
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 20 }}>
-                {[0,1,2,3,4,5].map(n => {
-                  const selected = String(hole.chgsPutts) === String(n);
-                  return (
-                    <button key={n} onClick={() => onChange({ ...hole, chgsPutts: String(n) })}
-                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? "#2563eb" : "#26395a", color: "#ffffff", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
-                      {n}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* FAIRWAY - par 4/5 only */}
+              {/* FAIRWAY */}
               {!isParThree && (
                 <React.Fragment>
                   <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
-                    {[["left","◀ Left"],["hit","✓ Hit"],["right","Right ▶"]].map(([val,lbl]) => {
+                    {[["left","\u25c0 Left"],["hit","\u2713 Hit"],["right","Right \u25b6"]].map(([val,lbl]) => {
                       const selected = hole.chgsFairway === val;
                       return (
                         <button key={val} onClick={() => onChange({ ...hole, chgsFairway: selected ? null : val, fairway: selected ? null : val })}
@@ -610,28 +596,28 @@
                 </React.Fragment>
               )}
 
-              {/* GREEN -80 */}
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN HIT (under 80 yds)</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
-                {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"]].map(([val,lbl,bg]) => {
-                  const selected = hole.greenMinus80 === val;
+              {/* GREEN +80 */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN +80 (over 80 yds)</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"\u2713 Hit","#16a34a"],[false,"\u2715 Miss","#b91c1c"],["na","N/A","#475569"]].map(([val,lbl,bg]) => {
+                  const selected = hole.greenPlus80 === val;
                   return (
-                    <button key={String(val)} onClick={() => onChange({ ...hole, greenMinus80: selected ? null : val })}
-                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                    <button key={String(val)} onClick={() => onChange({ ...hole, greenPlus80: selected ? null : val, gir: val === true ? true : (val === false ? false : null) })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
                     </button>
                   );
                 })}
               </div>
 
-              {/* GREEN +80 */}
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN HIT (over 80 yds)</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
-                {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"]].map(([val,lbl,bg]) => {
-                  const selected = hole.greenPlus80 === val;
+              {/* GREEN -80 */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN -80 (under 80 yds)</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"\u2713 Hit","#16a34a"],[false,"\u2715 Miss","#b91c1c"],["na","N/A","#475569"]].map(([val,lbl,bg]) => {
+                  const selected = hole.greenMinus80 === val;
                   return (
-                    <button key={String(val)} onClick={() => onChange({ ...hole, greenPlus80: selected ? null : val })}
-                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                    <button key={String(val)} onClick={() => onChange({ ...hole, greenMinus80: selected ? null : val, gir: val === true ? true : (val === false ? false : null) })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
                     </button>
                   );
@@ -640,13 +626,27 @@
 
               {/* UP AND DOWN */}
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>UP &amp; DOWN</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 24 }}>
-                {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,bg]) => {
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[[true,"\u2713 Yes","#16a34a"],[false,"\u2715 No","#b91c1c"]].map(([val,lbl,bg]) => {
                   const selected = hole.upAndDown === val;
                   return (
                     <button key={String(val)} onClick={() => onChange({ ...hole, upAndDown: selected ? null : val })}
                       style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? bg : "#26395a", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* PUTTS */}
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 24 }}>
+                {[0,1,2,3,4,5].map(n => {
+                  const selected = String(hole.chgsPutts) === String(n);
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, chgsPutts: String(n) })}
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid #3d5478", background: selected ? "#2563eb" : "#26395a", color: "#ffffff", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
+                      {n}
                     </button>
                   );
                 })}
@@ -1434,7 +1434,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v11</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v12</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1651,7 +1651,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "11";
+      var CURRENT_VERSION = "12";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
