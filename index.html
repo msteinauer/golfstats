@@ -561,7 +561,13 @@
               { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
             );
             const rows = await res.json();
-            const allCourses = rows.map(c => ({
+            const seenKeys = new Set();
+            const allCourses = rows.filter(c => {
+              const key = (c.club_name + "|" + c.city).toLowerCase();
+              if (seenKeys.has(key)) return false;
+              seenKeys.add(key);
+              return true;
+            }).map(c => ({
               id: c.id, club_name: c.club_name, course_name: c.club_name,
               number_of_holes: c.number_of_holes,
               location: { city: c.city, state: c.state },
@@ -584,7 +590,13 @@
 
             const res = await fetch(url, { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } });
             const rows = await res.json();
-            const courses = rows.map(c => ({
+            const seenIds = new Set();
+            const courses = rows.filter(c => {
+              const key = (c.club_name + "|" + c.city).toLowerCase();
+              if (seenIds.has(key)) return false;
+              seenIds.add(key);
+              return true;
+            }).map(c => ({
               id: c.id, club_name: c.club_name, course_name: c.club_name,
               number_of_holes: c.number_of_holes,
               location: {
@@ -738,32 +750,7 @@
               {loading && <div style={{ color: "#64748b", fontSize: 13, textAlign: "center", padding: 20 }}>
                 {state && !query ? `Building course list for ${state}... (first time only)` : "Searching..."}
               </div>}
-              {(() => {
-                if (!state) return null;
-                const stateAbbrevs = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
-                const abbr = stateAbbrevs[state];
-                try {
-                  const cached = localStorage.getItem("golflog_courses_" + abbr);
-                  if (cached) {
-                    const { courses, timestamp } = JSON.parse(cached);
-                    const days = Math.floor((Date.now() - timestamp) / 86400000);
-                    return (
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <div style={{ color: "#4ade80", fontSize: 11 }}>
-                          ✓ {courses.length} courses cached for {state} ({days === 0 ? "today" : days + "d ago"})
-                        </div>
-                        <button onClick={() => {
-                          localStorage.removeItem("golflog_courses_" + abbr);
-                          setResults([]); setError("Cache cleared — search again to refresh.");
-                        }} style={{ background: "none", border: "none", color: "#64748b", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>
-                          Clear cache
-                        </button>
-                      </div>
-                    );
-                  }
-                } catch {}
-                return null;
-              })()}
+
 
               {/* Course detail view */}
               {selectedCourse && (
