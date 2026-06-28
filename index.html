@@ -590,13 +590,16 @@
 
             const res = await fetch(url, { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } });
             const rows = await res.json();
-            const seenIds = new Set();
-            const courses = rows.filter(c => {
+            // Group by name+city, keep the one with the largest tees data (real 18-hole)
+            const byKey = {};
+            for (const c of rows) {
               const key = (c.club_name + "|" + c.city).toLowerCase();
-              if (seenIds.has(key)) return false;
-              seenIds.add(key);
-              return true;
-            }).map(c => ({
+              const teesLen = (c.tees || "").length;
+              if (!byKey[key] || teesLen > (byKey[key].tees || "").length) {
+                byKey[key] = c;
+              }
+            }
+            const courses = Object.values(byKey).map(c => ({
               id: c.id, club_name: c.club_name, course_name: c.club_name,
               number_of_holes: c.number_of_holes,
               location: {
@@ -667,13 +670,19 @@
           // Prefer male tees, fall back to female
           const teeGroups = tees.male || tees.female || [];
           if (Array.isArray(teeGroups) && teeGroups.length) {
-            // Find 18-hole tee set with most yards (championship tees)
-            const eighteenHole = teeGroups.filter(t => 
-              t.number_of_holes === 18 && t.holes && t.holes.length >= 18
-            );
-            const best = eighteenHole.length > 0
-              ? eighteenHole.reduce((a, b) => (b.total_yards || 0) > (a.total_yards || 0) ? b : a)
-              : teeGroups.find(t => t.holes && t.holes.length >= 18) || teeGroups[0];
+            // Find true 18-hole tee sets (back 9 differs from front 9)
+            const isTrue18 = (t) => {
+              if (!t.holes || t.holes.length < 18) return false;
+              // Check if back 9 yardages differ from front 9 (not just repeated)
+              for (let i = 0; i < 9; i++) {
+                if (t.holes[i]?.yardage !== t.holes[i+9]?.yardage) return true;
+              }
+              return false;
+            };
+            const true18 = teeGroups.filter(isTrue18);
+            const best = true18.length > 0
+              ? true18.reduce((a, b) => (b.total_yards || 0) > (a.total_yards || 0) ? b : a)
+              : (teeGroups.find(t => t.holes && t.holes.length >= 18) || teeGroups[0]);
             holes = best.holes || [];
           }
         }
