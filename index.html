@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v15</title>
+  <title>GolfLog v16</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -762,18 +762,18 @@
             // Fetch from Supabase
             setError(`Loading courses in ${state}...`);
             const res = await fetch(
-              `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=500&order=club_name.asc`,
+              `${SURL}/rest/v1/courses?select=id,club_name,course_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=500&order=club_name.asc`,
               { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
             );
             const rows = await res.json();
             const seenKeys = new Set();
             const allCourses = rows.filter(c => {
-              const key = (c.club_name + "|" + c.city).toLowerCase();
+              const key = (c.club_name + "|" + (c.course_name || "") + "|" + c.city).toLowerCase();
               if (seenKeys.has(key)) return false;
               seenKeys.add(key);
               return true;
             }).map(c => ({
-              id: c.id, club_name: c.club_name, course_name: c.club_name,
+              id: c.id, club_name: c.club_name, course_name: c.course_name || c.club_name,
               number_of_holes: c.number_of_holes,
               location: { city: c.city, state: c.state },
               tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
@@ -788,7 +788,7 @@
           } else {
             // Name search from Supabase
             const q = query.trim();
-            let url = `${SURL}/rest/v1/courses?select=id,club_name,city,state,country,number_of_holes,tees&limit=20&order=club_name.asc`;
+            let url = `${SURL}/rest/v1/courses?select=id,club_name,course_name,city,state,country,number_of_holes,tees&limit=100&order=club_name.asc`;
             if (country && country !== "United States") url += `&country=eq.${encodeURIComponent(country)}`;
             if (stateAbbr) url += `&state=eq.${stateAbbr}`;
             if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
@@ -798,14 +798,14 @@
             // Group by name+city, keep the one with the largest tees data (real 18-hole)
             const byKey = {};
             for (const c of rows) {
-              const key = (c.club_name + "|" + c.city).toLowerCase();
+              const key = (c.club_name + "|" + (c.course_name || "") + "|" + c.city).toLowerCase();
               const teesLen = (c.tees || "").length;
               if (!byKey[key] || teesLen > (byKey[key].tees || "").length) {
                 byKey[key] = c;
               }
             }
             const courses = Object.values(byKey).map(c => ({
-              id: c.id, club_name: c.club_name, course_name: c.club_name,
+              id: c.id, club_name: c.club_name, course_name: c.course_name || c.club_name,
               number_of_holes: c.number_of_holes,
               location: {
                 city: c.city !== "Unknown" ? c.city : "",
@@ -1101,7 +1101,10 @@
                   textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
                   <div>
-                    <div style={{ color: "#f1f5f9", fontWeight: 600, fontSize: 13 }}>{c.club_name || c.name}</div>
+                    <div style={{ color: "#f1f5f9", fontWeight: 600, fontSize: 13 }}>
+                      {c.club_name || c.name}
+                      {c.course_name && c.course_name !== c.club_name && !(c.club_name||"").includes(c.course_name) ? <span style={{ color: "#4ade80", fontWeight: 500 }}> · {c.course_name}</span> : null}
+                    </div>
                     <div style={{ color: "#94a3b8", fontSize: 11, marginTop: 2 }}>
                       {[
                         c.location?.city && c.location.city !== "Unknown" ? c.location.city : null,
@@ -1476,7 +1479,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v15</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v16</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1693,7 +1696,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "15";
+      var CURRENT_VERSION = "16";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
