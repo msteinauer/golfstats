@@ -9,15 +9,15 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v17</title>
+  <title>GolfLog v18</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
-    /* Light theme: invert luminance but keep hues (rotate 180 cancels invert's hue shift) */
-    body.light #app-root { filter: invert(1) hue-rotate(180deg); }
-    body.light { background: #f1f5f9; }
+    /* Light theme: invert luminance but keep hues, boost contrast for readability */
+    body.light #app-root { filter: invert(1) hue-rotate(180deg) contrast(1.08); }
+    body.light { background: #ffffff; }
     /* Keep the toggle button itself un-inverted so it reads correctly */
-    body.light #theme-toggle { filter: invert(1) hue-rotate(180deg); }
+    body.light #theme-toggle { filter: invert(1) hue-rotate(180deg) contrast(0.93); }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { opacity: 1; }
     input, button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -351,13 +351,16 @@
     // ── HoleCard ─────────────────────────────────────────────────────
     function HoleCard({ hole, holeNum, onChange }) {
       const [showScorePad, setShowScorePad] = React.useState(false);
+      const scorePadScrollRef = React.useRef(0);
+      const openScorePad = () => { scorePadScrollRef.current = window.scrollY; setShowScorePad(true); };
+      const closeScorePad = () => { closeScorePad(); setTimeout(() => window.scrollTo(0, scorePadScrollRef.current), 50); };
       const isParThree = hole.par === 3;
       return (
         <React.Fragment>
         <div style={{ background: "#1a2942", borderRadius: 14, padding: "14px 16px", border: "1px solid #26395a", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <button onClick={() => setShowScorePad(true)} style={{ width: 40, height: 40, borderRadius: 10, background: "#16a34a", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(34,197,94,0.4)" }}>{holeNum}</button>
+              <button onClick={openScorePad} style={{ width: 40, height: 40, borderRadius: 10, background: "#16a34a", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(34,197,94,0.4)" }}>{holeNum}</button>
               <div>
                 <div style={{ color: "#94a3b8", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>HOLE</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -372,7 +375,7 @@
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button onClick={() => setShowScorePad(true)}
+              <button onClick={openScorePad}
                 style={{ width: 52, height: 40, borderRadius: 10, background: "#26395a", border: "1px solid #3d5478", color: hole.score ? "#f1f5f9" : "#7c8db0", fontSize: 22, fontWeight: 800, textAlign: "center", outline: "none", cursor: "pointer" }}>
                 {hole.score || "—"}
               </button>
@@ -403,14 +406,14 @@
           </div>
         </div>
         {showScorePad && (
-          <div onClick={() => setShowScorePad(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
+          <div onClick={() => closeScorePad()} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000 }}>
             <div onClick={e => e.stopPropagation()} style={{ background: "#1a2942", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid #26395a", maxHeight: "88vh", overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
                   <div style={{ color: "#4ade80", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
                   <div style={{ color: "#94a3b8", fontSize: 12 }}>Enter your stats</div>
                 </div>
-                <button onClick={() => setShowScorePad(false)} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
+                <button onClick={() => closeScorePad()} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
               </div>
 
               {/* SCORE */}
@@ -479,7 +482,7 @@
                 })}
               </div>
 
-              <button onClick={() => setShowScorePad(false)}
+              <button onClick={() => closeScorePad()}
                 style={{ width: "100%", height: 52, borderRadius: 14, border: "none", background: "#16a34a", color: "#ffffff", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>
                 Done
               </button>
@@ -494,12 +497,15 @@
     function CHGSHoleCard({ hole, holeNum, onChange }) {
       const isParThree = hole.par === 3;
       const [showPad, setShowPad] = React.useState(false);
+      const scrollPosRef = React.useRef(0);
+      const openPad = () => { scrollPosRef.current = window.scrollY; setShowPad(true); };
+      const closePad = () => { setShowPad(false); setTimeout(() => window.scrollTo(0, scrollPosRef.current), 50); };
       return (
         <React.Fragment>
         <div style={{ background: "#1a2942", borderRadius: 14, padding: "13px 15px", border: "1px solid #1e3a5f", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <button onClick={() => setShowPad(true)} style={{ width: 40, height: 40, borderRadius: 10, background: "#2563eb", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,99,235,0.4)" }}>{holeNum}</button>
+              <button onClick={openPad} style={{ width: 40, height: 40, borderRadius: 10, background: "#2563eb", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,99,235,0.4)" }}>{holeNum}</button>
               <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 600 }}>Par {hole.par}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -560,7 +566,7 @@
                   <div style={{ color: "#60a5fa", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
                   <div style={{ color: "#94a3b8", fontSize: 12 }}>Enter your CHGS stats</div>
                 </div>
-                <button onClick={() => setShowPad(false)} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
+                <button onClick={() => closePad()} style={{ background: "#26395a", border: "none", color: "#cbd5e1", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
               </div>
 
               {/* SCORE */}
@@ -657,7 +663,7 @@
                 })}
               </div>
 
-              <button onClick={() => setShowPad(false)}
+              <button onClick={() => closePad()}
                 style={{ width: "100%", height: 52, borderRadius: 14, border: "none", background: "#2563eb", color: "#ffffff", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>
                 Done
               </button>
@@ -1492,7 +1498,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v17</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v18</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1710,7 +1716,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "17";
+      var CURRENT_VERSION = "18";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
