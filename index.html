@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v20</title>
+  <title>GolfLog v21</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -1447,23 +1447,20 @@
       const round = rounds[activeRound] || rounds[0];
 
       const updateHole = (i, updated) => {
-        setRounds(rounds.map((r, ri) => ri !== activeRound ? r : { ...r, holes: r.holes.map((h, hi) => hi === i ? updated : h) }));
+        setRounds(prev => prev.map((r, ri) => ri !== activeRound ? r : { ...r, holes: r.holes.map((h, hi) => hi === i ? updated : h) }));
       };
       const updateRoundMeta = (field, value) => {
-        setRounds(rounds.map((r, i) => i === activeRound ? { ...r, [field]: value } : r));
+        setRounds(prev => prev.map((r, i) => i === activeRound ? { ...r, [field]: value } : r));
       };
       const addRound = () => {
         const nr = [...rounds, defaultRound()];
         setRounds(nr); setActiveRound(nr.length - 1); setView("scorecard"); setActiveHalf("front");
       };
       const onSelectCourse = ({ name, pars }) => {
-        // Apply course name and hole pars to current round
-        const updatedHoles = rounds[activeRound].holes.map((h, i) => ({
-          ...h, par: pars[i] !== undefined ? pars[i] : h.par,
-        }));
-        setRounds(rounds.map((r, ri) => ri !== activeRound
+        // Apply course name and hole pars to current round (functional update)
+        setRounds(prev => prev.map((r, ri) => ri !== activeRound
           ? r
-          : { ...r, course: name, holes: updatedHoles }
+          : { ...r, course: name, holes: r.holes.map((h, i) => ({ ...h, par: pars[i] !== undefined ? pars[i] : h.par })) }
         ));
         setView("scorecard");
       };
@@ -1519,7 +1516,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v20</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v21</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1737,7 +1734,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "20";
+      var CURRENT_VERSION = "21";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
