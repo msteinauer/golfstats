@@ -9,10 +9,15 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v16</title>
+  <title>GolfLog v17</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
+    /* Light theme: invert luminance but keep hues (rotate 180 cancels invert's hue shift) */
+    body.light #app-root { filter: invert(1) hue-rotate(180deg); }
+    body.light { background: #f1f5f9; }
+    /* Keep the toggle button itself un-inverted so it reads correctly */
+    body.light #theme-toggle { filter: invert(1) hue-rotate(180deg); }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { opacity: 1; }
     input, button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -1368,6 +1373,14 @@
     ];
 
     function GolfStatsApp() {
+      const [lightMode, setLightMode] = useState(() => {
+        try { return localStorage.getItem("golflog_theme") === "light"; } catch { return false; }
+      });
+      React.useEffect(() => {
+        if (lightMode) document.body.classList.add("light");
+        else document.body.classList.remove("light");
+        try { localStorage.setItem("golflog_theme", lightMode ? "light" : "dark"); } catch {}
+      }, [lightMode]);
       const [rounds, setRounds] = useState(() => {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
@@ -1456,7 +1469,7 @@
       ];
 
       return (
-        <div style={{ minHeight: "100vh", background: "#0f1b2d", fontFamily: "'Inter', system-ui, sans-serif", color: "#f1f5f9", maxWidth: 430, margin: "0 auto" }}>
+        <div id="app-root" style={{ minHeight: "100vh", background: "#0f1b2d", fontFamily: "'Inter', system-ui, sans-serif", color: "#f1f5f9", maxWidth: 430, margin: "0 auto" }}>
           <PrintView round={round} />
           {showShare && <ShareModal
             round={round}
@@ -1479,11 +1492,12 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v16</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v17</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
+                <button id="theme-toggle" onClick={() => setLightMode(!lightMode)} title="Toggle light/dark" style={{ background: "#1e3a5f", color: "#fbbf24", border: "none", borderRadius: 8, padding: "7px 10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{lightMode ? "🌙" : "☀️"}</button>
                 <button onClick={() => setShowShare(true)} style={{ background: "#1e3a5f", color: "#60a5fa", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>↑ Share</button>
                 <button onClick={addRound} style={{ background: "#166534", color: "#4ade80", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>+ New</button>
               </div>
@@ -1696,7 +1710,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "16";
+      var CURRENT_VERSION = "17";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
