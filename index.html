@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v22</title>
+  <title>GolfLog v23</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -412,16 +412,16 @@
             {!isParThree && (
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>FIR</span>
-                <FairwayBtn value="◀" active={hole.fairway === "left"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "left" ? null : "left" })} />
-                <FairwayBtn value="✓ Hit" active={hole.fairway === "hit"} color="#22c55e" onClick={() => onChange({ ...hole, fairway: hole.fairway === "hit" ? null : "hit" })} />
-                <FairwayBtn value="▶" active={hole.fairway === "right"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "right" ? null : "right" })} />
+                <FairwayBtn value="◀" active={hole.fairway === "left"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "left" ? null : "left", chgsFairway: hole.fairway === "left" ? null : "left" })} />
+                <FairwayBtn value="✓ Hit" active={hole.fairway === "hit"} color="#22c55e" onClick={() => onChange({ ...hole, fairway: hole.fairway === "hit" ? null : "hit", chgsFairway: hole.fairway === "hit" ? null : "hit" })} />
+                <FairwayBtn value="▶" active={hole.fairway === "right"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "right" ? null : "right", chgsFairway: hole.fairway === "right" ? null : "right" })} />
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>GIR</span>
-              <button onClick={() => onChange({ ...hole, gir: hole.gir === true ? null : true })}
+              <button onClick={() => onChange({ ...hole, gir: hole.gir === true ? null : true, greenPlus80: hole.gir === true ? null : true })}
                 style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === true ? "#166534" : "var(--surface2)", color: hole.gir === true ? "#4ade80" : "var(--text3)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Yes</button>
-              <button onClick={() => onChange({ ...hole, gir: hole.gir === false ? null : false })}
+              <button onClick={() => onChange({ ...hole, gir: hole.gir === false ? null : false, greenPlus80: hole.gir === false ? null : false })}
                 style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === false ? "#7f1d1d" : "var(--surface2)", color: hole.gir === false ? "#f87171" : "var(--text3)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>No</button>
             </div>
           </div>
@@ -479,7 +479,7 @@
                     {[["left","◀ Left","var(--surface2)"],["hit","Hit","#16a34a"],["right","Right ▶","var(--surface2)"]].map(([val,lbl,selBg]) => {
                       const selected = hole.fairway === val;
                       return (
-                        <button key={val} onClick={() => onChange({ ...hole, fairway: selected ? null : val })}
+                        <button key={val} onClick={() => onChange({ ...hole, fairway: selected ? null : val, chgsFairway: selected ? null : val })}
                           style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid var(--border)", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "var(--surface2)", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                           {lbl}
                         </button>
@@ -495,7 +495,7 @@
                 {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,selBg]) => {
                   const selected = hole.gir === val;
                   return (
-                    <button key={String(val)} onClick={() => onChange({ ...hole, gir: selected ? null : val })}
+                    <button key={String(val)} onClick={() => onChange({ ...hole, gir: selected ? null : val, greenPlus80: selected ? null : val })}
                       style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid var(--border)", background: selected ? selBg : "var(--surface2)", color: "#ffffff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
                     </button>
@@ -1515,7 +1515,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v22</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v23</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1733,7 +1733,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "22";
+      var CURRENT_VERSION = "23";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
