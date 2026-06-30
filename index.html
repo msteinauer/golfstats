@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v18</title>
+  <title>GolfLog v19</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f1b2d; font-family: 'Inter', system-ui, sans-serif; color: #f1f5f9; }
@@ -420,7 +420,7 @@
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.score || ""}
-                  onChange={e => onChange({ ...hole, score: e.target.value, chgsScore: e.target.value })} placeholder="—" autoFocus
+                  onChange={e => onChange({ ...hole, score: e.target.value, chgsScore: e.target.value })} placeholder="—"
                   style={{ flex: 1, height: 64, borderRadius: 14, background: "#26395a", border: "2px solid #16a34a", color: "#ffffff", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
                 {hole.score && (() => {
                   const diff = Number(hole.score) - hole.par;
@@ -499,7 +499,7 @@
       const [showPad, setShowPad] = React.useState(false);
       const scrollPosRef = React.useRef(0);
       const openPad = () => { scrollPosRef.current = window.scrollY; setShowPad(true); };
-      const closePad = () => { setShowPad(false); setTimeout(() => window.scrollTo(0, scrollPosRef.current), 50); };
+      const closePad = () => { const y = scrollPosRef.current; setShowPad(false); requestAnimationFrame(() => window.scrollTo(0, y)); };
       return (
         <React.Fragment>
         <div style={{ background: "#1a2942", borderRadius: 14, padding: "13px 15px", border: "1px solid #1e3a5f", marginBottom: 10 }}>
@@ -573,7 +573,7 @@
               <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""}
-                  onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—" autoFocus
+                  onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—"
                   style={{ flex: 1, height: 64, borderRadius: 14, background: "#26395a", border: "2px solid #2563eb", color: "#ffffff", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
                 {hole.chgsScore && (() => {
                   const diff = Number(hole.chgsScore) - hole.par;
@@ -1498,7 +1498,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v18</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "#3d5478", marginLeft: 3 }}>v19</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1716,7 +1716,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "18";
+      var CURRENT_VERSION = "19";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
