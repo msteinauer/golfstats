@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v21</title>
+  <title>GolfLog v22</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -373,9 +373,8 @@
     // ── HoleCard ─────────────────────────────────────────────────────
     function HoleCard({ hole, holeNum, onChange }) {
       const [showScorePad, setShowScorePad] = React.useState(false);
-      const scorePadScrollRef = React.useRef(0);
-      const openScorePad = () => { scorePadScrollRef.current = window.scrollY; setShowScorePad(true); };
-      const closeScorePad = () => { closeScorePad(); setTimeout(() => window.scrollTo(0, scorePadScrollRef.current), 50); };
+      const openScorePad = () => setShowScorePad(true);
+      const closeScorePad = () => setShowScorePad(false);
       const isParThree = hole.par === 3;
       return (
         <React.Fragment>
@@ -1516,7 +1515,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v21</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v22</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1734,7 +1733,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "21";
+      var CURRENT_VERSION = "22";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
