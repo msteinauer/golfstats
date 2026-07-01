@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v24</title>
+  <title>GolfLog v25</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -88,7 +88,18 @@
     // ── Export all rounds as JSON file ──────────────────────────────
     function exportAllRounds(rounds) {
       try {
-        const data = JSON.stringify(rounds, null, 2);
+        // Back up everything: rounds, favorites, and custom courses
+        let favorites = [], customCourses = [];
+        try { favorites = JSON.parse(localStorage.getItem("golflog_favorites")) || []; } catch {}
+        try { customCourses = JSON.parse(localStorage.getItem("golflog_custom_courses")) || []; } catch {}
+        const backup = {
+          version: 2,
+          exported: new Date().toISOString(),
+          rounds: rounds,
+          favorites: favorites,
+          customCourses: customCourses
+        };
+        const data = JSON.stringify(backup, null, 2);
         const blob = new Blob([data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -98,6 +109,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        try { localStorage.setItem("golflog_last_backup", Date.now().toString()); } catch {}
         return true;
       } catch { return false; }
     }
@@ -200,8 +212,17 @@
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          if (Array.isArray(data)) { onSuccess(data); }
-          else { onError("Invalid file format"); }
+          if (Array.isArray(data)) {
+            // Old format: just rounds
+            onSuccess(data);
+          } else if (data && Array.isArray(data.rounds)) {
+            // New format: full backup - restore favorites and custom courses too
+            try { if (data.favorites) localStorage.setItem("golflog_favorites", JSON.stringify(data.favorites)); } catch {}
+            try { if (data.customCourses) localStorage.setItem("golflog_custom_courses", JSON.stringify(data.customCourses)); } catch {}
+            onSuccess(data.rounds);
+          } else {
+            onError("Invalid file format");
+          }
         } catch { onError("Could not read file"); }
       };
       reader.readAsText(file);
@@ -365,11 +386,11 @@
               </div>
             </button>
 
-            <button onClick={() => { if(exportAllRounds(allRounds)) showToast("✓ Backup file saved!"); else showToast("Could not save file"); }} style={btnStyle("#78350f")}>
+            <button onClick={() => { if(exportAllRounds(allRounds)) showToast("✓ Full backup saved!"); else showToast("Could not save file"); }} style={btnStyle("#78350f")}>
               <span style={{ fontSize: 20 }}>💾</span>
               <div>
-                <div>Export All Rounds (Backup)</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Save a backup file of all rounds to your phone</div>
+                <div>Backup Everything</div>
+                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Rounds, favorites &amp; my courses — save to your phone</div>
               </div>
             </button>
 
@@ -1624,7 +1645,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v24</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v25</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1842,7 +1863,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "24";
+      var CURRENT_VERSION = "25";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
