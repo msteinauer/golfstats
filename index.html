@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v26</title>
+  <title>GolfLog v27</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -283,7 +283,7 @@
       <button onClick={onClick} style={{
         padding: "4px 9px", borderRadius: 6, border: "none",
         background: active ? color : "var(--surface2)", color: active ? "#fff" : "var(--text3)",
-        fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
+        fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
       }}>{value}</button>
     );
 
@@ -291,7 +291,7 @@
       <button onClick={onClick} style={{
         padding: "4px 10px", borderRadius: 6, border: "none",
         background: active ? activeColor : "var(--surface2)", color: active ? "#fff" : "var(--text3)",
-        fontSize: 11, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
+        fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
       }}>{label}</button>
     );
 
@@ -300,7 +300,7 @@
       const diff = Number(score) - Number(par);
       const bg = diff <= -2 ? "#f59e0b" : diff === -1 ? "#22c55e" : diff === 0 ? "#3b82f6" : diff === 1 ? "#f87171" : "#dc2626";
       const label = diff <= -2 ? "Eagle" : diff === -1 ? "Birdie" : diff === 0 ? "Par" : diff === 1 ? "Bogey" : diff === 2 ? "Double" : `+${diff}`;
-      return <span style={{ background: bg, color: "#fff", borderRadius: 5, padding: "1px 7px", fontSize: 11, fontWeight: 700, marginLeft: 6 }}>{label}</span>;
+      return <span style={{ background: bg, color: "#fff", borderRadius: 5, padding: "1px 7px", fontSize: 13, fontWeight: 700, marginLeft: 6 }}>{label}</span>;
     };
 
     // ── Share Modal ──────────────────────────────────────────────────
@@ -342,7 +342,7 @@
 
       const btnStyle = (color) => ({
         width: "100%", padding: "13px 16px", borderRadius: 12, border: "none",
-        background: color, color: "#fff", fontWeight: 700, fontSize: 14,
+        background: color, color: "#fff", fontWeight: 700, fontSize: 16,
         cursor: "pointer", marginBottom: 10, textAlign: "left",
         display: "flex", alignItems: "center", gap: 12,
       });
@@ -358,7 +358,7 @@
           }}>
             <div style={{ width: 40, height: 4, background: "var(--border)", borderRadius: 2, margin: "0 auto 20px" }} />
             <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 17, marginBottom: 6 }}>Share Round</div>
-            <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 20 }}>
+            <div style={{ color: "var(--text3)", fontSize: 15, marginBottom: 20 }}>
               {round.course || "Untitled Round"} · {round.date}
             </div>
 
@@ -366,7 +366,7 @@
               <span style={{ fontSize: 20 }}>📋</span>
               <div>
                 <div>Copy / Share as Text</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Full summary you can paste into any message</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Full summary you can paste into any message</div>
               </div>
             </button>
 
@@ -374,7 +374,7 @@
               <span style={{ fontSize: 20 }}>🔗</span>
               <div>
                 <div>Share Link</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Anyone with the link sees your full round</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Anyone with the link sees your full round</div>
               </div>
             </button>
 
@@ -382,7 +382,7 @@
               <span style={{ fontSize: 20 }}>📄</span>
               <div>
                 <div>Save as PDF</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Use your phone's print → Save as PDF</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Use your phone's print → Save as PDF</div>
               </div>
             </button>
 
@@ -390,7 +390,7 @@
               <span style={{ fontSize: 20 }}>💾</span>
               <div>
                 <div>Backup Everything</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Rounds, favorites &amp; my courses — save to your phone</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Rounds, favorites &amp; my courses — save to your phone</div>
               </div>
             </button>
 
@@ -398,7 +398,7 @@
               <span style={{ fontSize: 20 }}>📊</span>
               <div>
                 <div>Export Scores (Excel/CSV)</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Scores, putts &amp; stats — opens in Excel</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Scores, putts &amp; stats — opens in Excel</div>
               </div>
             </button>
 
@@ -406,15 +406,15 @@
               <span style={{ fontSize: 20 }}>📊</span>
               <div>
                 <div>Export CHGS Stats (Excel/CSV)</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>CHGS hole-by-hole — opens in Excel</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>CHGS hole-by-hole — opens in Excel</div>
               </div>
             </button>
 
             <label style={{ ...btnStyle("#1a2e1a"), display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
               <span style={{ fontSize: 20 }}>📂</span>
               <div>
-                <div style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>Import Rounds</div>
-                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2, color: "#fff" }}>Restore rounds from a backup file</div>
+                <div style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>Import Rounds</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2, color: "#fff" }}>Restore rounds from a backup file</div>
               </div>
               <input type="file" accept=".json" style={{ display: "none" }} onChange={e => {
                 const file = e.target.files[0];
@@ -429,14 +429,14 @@
 
             <button onClick={onClose} style={{
               width: "100%", padding: "13px", borderRadius: 12, border: "none",
-              background: "var(--surface2)", color: "var(--text3)", fontWeight: 700, fontSize: 14, cursor: "pointer",
+              background: "var(--surface2)", color: "var(--text3)", fontWeight: 700, fontSize: 16, cursor: "pointer",
             }}>Cancel</button>
 
             {toast && (
               <div style={{
                 position: "fixed", bottom: 100, left: "50%", transform: "translateX(-50%)",
                 background: "#22c55e", color: "#fff", padding: "10px 20px",
-                borderRadius: 20, fontWeight: 700, fontSize: 14, zIndex: 200,
+                borderRadius: 20, fontWeight: 700, fontSize: 16, zIndex: 200,
               }}>{toast}</div>
             )}
           </div>
@@ -466,7 +466,7 @@
             <thead>
               <tr style={{ background: "#f0f0f0" }}>
                 {["Hole","Par","Score","+/-","Putts","FIR","GIR"].map(h => (
-                  <th key={h} style={{ padding: "6px 8px", border: "1px solid #ddd", fontSize: 12 }}>{h}</th>
+                  <th key={h} style={{ padding: "6px 8px", border: "1px solid #ddd", fontSize: 14 }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -475,27 +475,27 @@
                 const d = h.score !== "" ? Number(h.score) - Number(h.par) : null;
                 return (
                   <tr key={i}>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{i+1}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{h.par}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12, fontWeight: 700 }}>{h.score || "—"}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{d !== null ? (d === 0 ? "E" : d > 0 ? `+${d}` : d) : "—"}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{h.putts || "—"}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{h.par === 3 ? "N/A" : h.fairway === "hit" ? "✓" : h.fairway ? "✗" : "—"}</td>
-                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{h.gir === true ? "✓" : h.gir === false ? "✗" : "—"}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{i+1}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{h.par}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14, fontWeight: 700 }}>{h.score || "—"}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{d !== null ? (d === 0 ? "E" : d > 0 ? `+${d}` : d) : "—"}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{h.putts || "—"}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{h.par === 3 ? "N/A" : h.fairway === "hit" ? "✓" : h.fairway ? "✗" : "—"}</td>
+                    <td style={{ padding: "5px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{h.gir === true ? "✓" : h.gir === false ? "✗" : "—"}</td>
                   </tr>
                 );
               })}
               <tr style={{ background: "#f0f0f0", fontWeight: 700 }}>
-                <td colSpan={2} style={{ padding: "6px 8px", border: "1px solid #ddd", fontSize: 12 }}>TOTAL</td>
-                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{totalScore}</td>
-                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{diffStr}</td>
-                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{puttHoles.length ? totalPutts : "—"}</td>
-                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{fwHoles.length ? `${fwHit}/${fwHoles.length}` : "—"}</td>
-                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 12 }}>{played.length ? `${girCount}/${played.length}` : "—"}</td>
+                <td colSpan={2} style={{ padding: "6px 8px", border: "1px solid #ddd", fontSize: 14 }}>TOTAL</td>
+                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{totalScore}</td>
+                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{diffStr}</td>
+                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{puttHoles.length ? totalPutts : "—"}</td>
+                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{fwHoles.length ? `${fwHit}/${fwHoles.length}` : "—"}</td>
+                <td style={{ padding: "6px 8px", border: "1px solid #ddd", textAlign: "center", fontSize: 14 }}>{played.length ? `${girCount}/${played.length}` : "—"}</td>
               </tr>
             </tbody>
           </table>
-          <p style={{ fontSize: 11, color: "#888" }}>Generated by GolfLog</p>
+          <p style={{ fontSize: 13, color: "#888" }}>Generated by GolfLog</p>
         </div>
       );
     }
@@ -513,13 +513,13 @@
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button onClick={openScorePad} style={{ width: 40, height: 40, borderRadius: 10, background: "#16a34a", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(34,197,94,0.4)" }}>{holeNum}</button>
               <div>
-                <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>HOLE</div>
+                <div style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>HOLE</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ color: "var(--text)", fontSize: 12, fontWeight: 600 }}>Par</span>
+                  <span style={{ color: "var(--text)", fontSize: 14, fontWeight: 600 }}>Par</span>
                   <div style={{ display: "flex", gap: 3 }}>
                     {PAR_OPTIONS.map(p => (
                       <button key={p} onClick={() => onChange({ ...hole, par: p, fairway: p === 3 ? null : hole.fairway })}
-                        style={{ width: 24, height: 22, borderRadius: 5, border: "none", background: hole.par === p ? "#166534" : "var(--surface2)", color: hole.par === p ? "#4ade80" : "var(--text3)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{p}</button>
+                        style={{ width: 24, height: 22, borderRadius: 5, border: "none", background: hole.par === p ? "#166534" : "var(--surface2)", color: hole.par === p ? "#4ade80" : "var(--text3)", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{p}</button>
                     ))}
                   </div>
                 </div>
@@ -535,24 +535,24 @@
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>PUTTS</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>PUTTS</span>
               <input type="number" min="0" max="10" value={hole.putts} onChange={e => onChange({ ...hole, putts: e.target.value })} placeholder="—"
-                style={{ width: 38, height: 28, borderRadius: 7, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 700, textAlign: "center", outline: "none" }} />
+                style={{ width: 38, height: 28, borderRadius: 7, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16, fontWeight: 700, textAlign: "center", outline: "none" }} />
             </div>
             {!isParThree && (
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>FIR</span>
+                <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>FIR</span>
                 <FairwayBtn value="◀" active={hole.fairway === "left"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "left" ? null : "left", chgsFairway: hole.fairway === "left" ? null : "left" })} />
                 <FairwayBtn value="✓ Hit" active={hole.fairway === "hit"} color="#22c55e" onClick={() => onChange({ ...hole, fairway: hole.fairway === "hit" ? null : "hit", chgsFairway: hole.fairway === "hit" ? null : "hit" })} />
                 <FairwayBtn value="▶" active={hole.fairway === "right"} color="#f59e0b" onClick={() => onChange({ ...hole, fairway: hole.fairway === "right" ? null : "right", chgsFairway: hole.fairway === "right" ? null : "right" })} />
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>GIR</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>GIR</span>
               <button onClick={() => onChange({ ...hole, gir: hole.gir === true ? null : true, greenPlus80: hole.gir === true ? null : true })}
-                style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === true ? "#166534" : "var(--surface2)", color: hole.gir === true ? "#4ade80" : "var(--text3)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Yes</button>
+                style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === true ? "#166534" : "var(--surface2)", color: hole.gir === true ? "#4ade80" : "var(--text3)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Yes</button>
               <button onClick={() => onChange({ ...hole, gir: hole.gir === false ? null : false, greenPlus80: hole.gir === false ? null : false })}
-                style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === false ? "#7f1d1d" : "var(--surface2)", color: hole.gir === false ? "#f87171" : "var(--text3)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>No</button>
+                style={{ padding: "3px 9px", borderRadius: 6, border: "none", background: hole.gir === false ? "#7f1d1d" : "var(--surface2)", color: hole.gir === false ? "#f87171" : "var(--text3)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>No</button>
             </div>
           </div>
         </div>
@@ -561,14 +561,14 @@
             <div onClick={e => e.stopPropagation()} style={{ background: "var(--surface)", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid var(--surface2)", maxHeight: "88vh", overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
-                  <div style={{ color: "#4ade80", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
-                  <div style={{ color: "var(--text3)", fontSize: 12 }}>Enter your stats</div>
+                  <div style={{ color: "#4ade80", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14 }}>Enter your stats</div>
                 </div>
                 <button onClick={() => closeScorePad()} style={{ background: "var(--surface2)", border: "none", color: "var(--text2)", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
               </div>
 
               {/* SCORE */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.score || ""}
                   onChange={e => onChange({ ...hole, score: e.target.value, chgsScore: e.target.value })} placeholder="—"
@@ -588,7 +588,7 @@
               </div>
 
               {/* PUTTS */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[0,1,2,3,4,5].map(n => {
                   const selected = String(hole.putts) === String(n);
@@ -604,13 +604,13 @@
               {/* FAIRWAY - only for par 4/5 */}
               {hole.par !== 3 && (
                 <React.Fragment>
-                  <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
                     {[["left","◀ Left","var(--surface2)"],["hit","Hit","#16a34a"],["right","Right ▶","var(--surface2)"]].map(([val,lbl,selBg]) => {
                       const selected = hole.fairway === val;
                       return (
                         <button key={val} onClick={() => onChange({ ...hole, fairway: selected ? null : val, chgsFairway: selected ? null : val })}
-                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid var(--border)", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "var(--surface2)", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid var(--border)", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "var(--surface2)", color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
                           {lbl}
                         </button>
                       );
@@ -620,7 +620,7 @@
               )}
 
               {/* GIR */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN IN REGULATION</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN IN REGULATION</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,selBg]) => {
                   const selected = hole.gir === val;
@@ -656,10 +656,10 @@
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <button onClick={openPad} style={{ width: 40, height: 40, borderRadius: 10, background: "#2563eb", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(37,99,235,0.4)" }}>{holeNum}</button>
-              <span style={{ color: "var(--text3)", fontSize: 12, fontWeight: 600 }}>Par {hole.par}</span>
+              <span style={{ color: "var(--text3)", fontSize: 14, fontWeight: 600 }}>Par {hole.par}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>SCORE</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>SCORE</span>
               <input type="number" min="1" max="15" value={hole.chgsScore}
                 onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—"
                 style={{ width: 46, height: 36, borderRadius: 9, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 20, fontWeight: 800, textAlign: "center", outline: "none" }} />
@@ -668,7 +668,7 @@
           </div>
           {!isParThree && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>FAIRWAY</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>FAIRWAY</span>
               <div style={{ display: "flex", gap: 4 }}>
                 <FairwayBtn value="◀ Left" active={hole.chgsFairway === "left"} color="#f59e0b" onClick={() => onChange({ ...hole, chgsFairway: hole.chgsFairway === "left" ? null : "left", fairway: hole.chgsFairway === "left" ? null : "left" })} />
                 <FairwayBtn value="✓ Hit" active={hole.chgsFairway === "hit"} color="#22c55e" onClick={() => onChange({ ...hole, chgsFairway: hole.chgsFairway === "hit" ? null : "hit", fairway: hole.chgsFairway === "hit" ? null : "hit" })} />
@@ -677,7 +677,7 @@
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
-            <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>GREEN +80</span>
+            <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>GREEN +80</span>
             <div style={{ display: "flex", gap: 4 }}>
               <ToggleBtn label="Hit ✓" active={hole.greenPlus80 === true} activeColor="#22c55e" onClick={() => { const hitting = hole.greenPlus80 !== true; onChange({ ...hole, greenPlus80: hitting ? true : null, gir: hitting ? true : null }); }} />
               <ToggleBtn label="Missed ✗" active={hole.greenPlus80 === false} activeColor="#ef4444" onClick={() => { const missing = hole.greenPlus80 !== false; onChange({ ...hole, greenPlus80: missing ? false : null, gir: missing ? false : null }); }} />
@@ -685,7 +685,7 @@
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
-            <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>GREEN -80</span>
+            <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", minWidth: 68 }}>GREEN -80</span>
             <div style={{ display: "flex", gap: 4 }}>
               <ToggleBtn label="Hit ✓" active={hole.greenMinus80 === true} activeColor="#22c55e" onClick={() => { const hitting = hole.greenMinus80 !== true; onChange({ ...hole, greenMinus80: hitting ? true : null, gir: hitting ? true : null }); }} />
               <ToggleBtn label="Missed ✗" active={hole.greenMinus80 === false} activeColor="#ef4444" onClick={() => { const missing = hole.greenMinus80 !== false; onChange({ ...hole, greenMinus80: missing ? false : null, gir: missing ? false : null }); }} />
@@ -694,17 +694,17 @@
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>UP & DOWN</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>UP & DOWN</span>
               <div style={{ display: "flex", gap: 4 }}>
                 <ToggleBtn label="Yes" active={hole.upAndDown === true} activeColor="#22c55e" onClick={() => onChange({ ...hole, upAndDown: hole.upAndDown === true ? null : true })} />
                 <ToggleBtn label="No" active={hole.upAndDown === false} activeColor="#ef4444" onClick={() => onChange({ ...hole, upAndDown: hole.upAndDown === false ? null : false })} />
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em" }}>PUTTS</span>
+              <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em" }}>PUTTS</span>
               <input type="number" min="0" max="10" value={hole.chgsPutts}
                 onChange={e => onChange({ ...hole, chgsPutts: e.target.value, putts: e.target.value })} placeholder="—"
-                style={{ width: 38, height: 28, borderRadius: 7, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontWeight: 700, textAlign: "center", outline: "none" }} />
+                style={{ width: 38, height: 28, borderRadius: 7, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)", fontSize: 16, fontWeight: 700, textAlign: "center", outline: "none" }} />
             </div>
           </div>
         </div>
@@ -713,14 +713,14 @@
             <div onClick={e => e.stopPropagation()} style={{ background: "var(--surface)", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid var(--surface-blue)", maxHeight: "88vh", overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
-                  <div style={{ color: "#60a5fa", fontSize: 14, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
-                  <div style={{ color: "var(--text3)", fontSize: 12 }}>Enter your CHGS stats</div>
+                  <div style={{ color: "#60a5fa", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14 }}>Enter your CHGS stats</div>
                 </div>
                 <button onClick={() => closePad()} style={{ background: "var(--surface2)", border: "none", color: "var(--text2)", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
               </div>
 
               {/* SCORE */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                 <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""}
                   onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—"
@@ -742,13 +742,13 @@
               {/* FAIRWAY */}
               {!isParThree && (
                 <React.Fragment>
-                  <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>FAIRWAY</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
                     {[["left","◀ Left"],["hit","✓ Hit"],["right","Right ▶"]].map(([val,lbl]) => {
                       const selected = hole.chgsFairway === val;
                       return (
                         <button key={val} onClick={() => onChange({ ...hole, chgsFairway: selected ? null : val, fairway: selected ? null : val })}
-                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "var(--surface2)", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                          style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? (val==="hit"?"#16a34a":"#b45309") : "var(--surface2)", color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
                           {lbl}
                         </button>
                       );
@@ -758,13 +758,13 @@
               )}
 
               {/* GREEN +80 */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN +80 (over 80 yds)</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN +80 (over 80 yds)</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"],["na","N/A","var(--text3)"]].map(([val,lbl,bg]) => {
                   const selected = hole.greenPlus80 === val;
                   return (
                     <button key={String(val)} onClick={() => onChange({ ...hole, greenPlus80: selected ? null : val, gir: val === true ? true : (val === false ? false : null) })}
-                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? bg : "var(--surface2)", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? bg : "var(--surface2)", color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
                     </button>
                   );
@@ -772,13 +772,13 @@
               </div>
 
               {/* GREEN -80 */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN -80 (under 80 yds)</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>GREEN -80 (under 80 yds)</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[[true,"✓ Hit","#16a34a"],[false,"✕ Miss","#b91c1c"],["na","N/A","var(--text3)"]].map(([val,lbl,bg]) => {
                   const selected = hole.greenMinus80 === val;
                   return (
                     <button key={String(val)} onClick={() => onChange({ ...hole, greenMinus80: selected ? null : val, gir: val === true ? true : (val === false ? false : null) })}
-                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? bg : "var(--surface2)", color: "#ffffff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? bg : "var(--surface2)", color: "#ffffff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
                       {lbl}
                     </button>
                   );
@@ -786,7 +786,7 @@
               </div>
 
               {/* UP AND DOWN */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>UP &amp; DOWN</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>UP &amp; DOWN</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginBottom: 20 }}>
                 {[[true,"✓ Yes","#16a34a"],[false,"✕ No","#b91c1c"]].map(([val,lbl,bg]) => {
                   const selected = hole.upAndDown === val;
@@ -800,7 +800,7 @@
               </div>
 
               {/* PUTTS */}
-              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>PUTTS</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 24 }}>
                 {[0,1,2,3,4,5].map(n => {
                   const selected = String(hole.chgsPutts) === String(n);
@@ -1088,7 +1088,7 @@
 
       const inputStyle = {
         background: "var(--surface2)", border: "1px solid var(--border)", borderRadius: 8,
-        color: "var(--text)", padding: "8px 12px", fontSize: 13, outline: "none", width: "100%",
+        color: "var(--text)", padding: "8px 12px", fontSize: 15, outline: "none", width: "100%",
       };
 
       return (
@@ -1097,7 +1097,7 @@
           <div style={{ display: "flex", background: "var(--surface)", borderRadius: 10, border: "1px solid var(--surface2)", padding: 3, marginBottom: 14 }}>
             {[{id:"search",label:"🔍 Search"},{id:"favorites",label:"⭐ Favorites"},{id:"custom",label:"✏️ My Courses"}].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
-                flex: 1, border: "none", borderRadius: 8, fontSize: 11,
+                flex: 1, border: "none", borderRadius: 8, fontSize: 13,
                 background: tab === t.id ? "#166534" : "transparent",
                 color: tab === t.id ? "#4ade80" : "var(--text3)",
                 fontWeight: 700, padding: "7px 4px", cursor: "pointer", transition: "all 0.15s",
@@ -1127,21 +1127,21 @@
                   style={{ ...inputStyle, flex: 1 }} />
                 <button onClick={searchCourses} style={{
                   background: "#166534", color: "#4ade80", border: "none",
-                  borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                  borderRadius: 8, padding: "8px 14px", fontWeight: 700, fontSize: 15, cursor: "pointer",
                 }}>{loading ? "..." : "Search"}</button>
               </div>
-              {error && <div style={{ color: "#f87171", fontSize: 12, marginBottom: 10 }}>{error}</div>}
+              {error && <div style={{ color: "#f87171", fontSize: 14, marginBottom: 10 }}>{error}</div>}
               {results.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <div style={{ color: "var(--text3)", fontSize: 11 }}>Showing {results.length} courses</div>
+                  <div style={{ color: "var(--text3)", fontSize: 13 }}>Showing {results.length} courses</div>
                   {state && <button onClick={() => {
                     const abbrs = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
                     localStorage.removeItem("golflog_courses_" + abbrs[state]);
                     setResults([]); setError("Cache cleared — search again to refresh.");
-                  }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>Clear cache</button>}
+                  }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>Clear cache</button>}
                 </div>
               )}
-              {loading && <div style={{ color: "var(--text3)", fontSize: 13, textAlign: "center", padding: 20 }}>
+              {loading && <div style={{ color: "var(--text3)", fontSize: 15, textAlign: "center", padding: 20 }}>
                 {state && !query ? `Building course list for ${state}... (first time only)` : "Searching..."}
               </div>}
 
@@ -1151,8 +1151,8 @@
                 <div style={{ background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid #166534", marginBottom: 12 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
-                      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{selectedCourse.club_name || selectedCourse.name}</div>
-                      <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{selectedCourse.city}, {selectedCourse.state || state}</div>
+                      <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{selectedCourse.club_name || selectedCourse.name}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{selectedCourse.city}, {selectedCourse.state || state}</div>
                     </div>
                     <button onClick={() => { setSelectedCourse(null); setSelectedTee(null); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer" }}>✕</button>
                   </div>
@@ -1173,15 +1173,15 @@
                       <React.Fragment>
                         {valid.length > 0 && (
                           <div style={{ marginBottom: 10 }}>
-                            <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6 }}>SELECT TEES</div>
+                            <div style={{ color: "var(--text3)", fontSize: 13, fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6 }}>SELECT TEES</div>
                             <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
                               {valid.map((t, ti) => {
                                 const isActive = activeTee && t.tee_name === activeTee.tee_name && t.gender === activeTee.gender && t.total_yards === activeTee.total_yards;
                                 return (
                                   <button key={ti} onClick={() => setSelectedTee(t)}
                                     style={{ flexShrink: 0, padding: "8px 12px", borderRadius: 10, border: isActive ? "2px solid #4ade80" : "1px solid var(--border)", background: isActive ? "#166534" : "var(--surface2)", color: isActive ? "#4ade80" : "var(--text2)", cursor: "pointer", textAlign: "left" }}>
-                                    <div style={{ fontSize: 12, fontWeight: 700 }}>{t.tee_name} {t.gender === "F" ? "♀" : ""}</div>
-                                    <div style={{ fontSize: 10, opacity: 0.8, marginTop: 1 }}>{t.total_yards} yds</div>
+                                    <div style={{ fontSize: 14, fontWeight: 700 }}>{t.tee_name} {t.gender === "F" ? "♀" : ""}</div>
+                                    <div style={{ fontSize: 12, opacity: 0.8, marginTop: 1 }}>{t.total_yards} yds</div>
                                   </button>
                                 );
                               })}
@@ -1189,7 +1189,7 @@
                           </div>
                         )}
                         {activeTee && (
-                          <div style={{ display: "flex", gap: 14, marginBottom: 10, padding: "8px 12px", background: "var(--surface3)", borderRadius: 10, fontSize: 11 }}>
+                          <div style={{ display: "flex", gap: 14, marginBottom: 10, padding: "8px 12px", background: "var(--surface3)", borderRadius: 10, fontSize: 13 }}>
                             <div><span style={{ color: "var(--text3)" }}>Rating </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.course_rating || "—"}</span></div>
                             <div><span style={{ color: "var(--text3)" }}>Slope </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.slope_rating || "—"}</span></div>
                             <div><span style={{ color: "var(--text3)" }}>Yards </span><span style={{ color: "#4ade80", fontWeight: 700 }}>{activeTee.total_yards || "—"}</span></div>
@@ -1199,18 +1199,18 @@
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 4, marginBottom: 6 }}>
                           {holes.slice(0, 18).map((h, i) => (
                             <div key={i} style={{ textAlign: "center" }}>
-                              <div style={{ color: "var(--text3)", fontSize: 9, fontWeight: 600 }}>{i+1}</div>
-                              <div style={{ background: "var(--surface2)", borderRadius: 4, padding: "3px 0", color: "#4ade80", fontSize: 12, fontWeight: 700 }}>{h.par || "?"}</div>
-                              {h.yardage ? <div style={{ color: "var(--text4)", fontSize: 8, marginTop: 1 }}>{h.yardage}</div> : null}
+                              <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 600 }}>{i+1}</div>
+                              <div style={{ background: "var(--surface2)", borderRadius: 4, padding: "3px 0", color: "#4ade80", fontSize: 14, fontWeight: 700 }}>{h.par || "?"}</div>
+                              {h.yardage ? <div style={{ color: "var(--text4)", fontSize: 11, marginTop: 1 }}>{h.yardage}</div> : null}
                             </div>
                           ))}
-                          {!holes.length && <div style={{ gridColumn: "span 9", color: "var(--text3)", fontSize: 11, padding: "8px 0" }}>Par data not available</div>}
+                          {!holes.length && <div style={{ gridColumn: "span 9", color: "var(--text3)", fontSize: 13, padding: "8px 0" }}>Par data not available</div>}
                         </div>
                       </React.Fragment>
                     );
                   })()}
                   {selectedCourse._debugKeys && (
-                    <div style={{ background: "#0a0a0a", borderRadius: 6, padding: "8px 10px", marginBottom: 10, fontSize: 10, color: "#f59e0b", wordBreak: "break-all" }}>
+                    <div style={{ background: "#0a0a0a", borderRadius: 6, padding: "8px 10px", marginBottom: 10, fontSize: 12, color: "#f59e0b", wordBreak: "break-all" }}>
                       <div>Keys: {selectedCourse._debugKeys}</div>
                       {selectedCourse._debugTeeKeys && <div>Tee[0] keys: {selectedCourse._debugTeeKeys}</div>}
                       {selectedCourse._debugHoleKeys && <div>Hole[0] keys: {selectedCourse._debugHoleKeys}</div>}
@@ -1226,13 +1226,13 @@
                       }
                     }} style={{
                       flex: 2, padding: "10px", background: "#166534", border: "none",
-                      borderRadius: 8, color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      borderRadius: 8, color: "#4ade80", fontWeight: 700, fontSize: 15, cursor: "pointer",
                     }}>✓ Use This Course</button>
                     <button onClick={() => toggleFav({ id: selectedCourse.id || selectedCourse.club_id, name: selectedCourse.club_name || selectedCourse.name, state, holes: selectedCourse.holes || selectedCourse.tees?.[0]?.holes || [] })} style={{
                       flex: 1, padding: "10px", background: isFav(selectedCourse.id || selectedCourse.club_id) ? "#78350f" : "var(--surface2)",
                       border: "none", borderRadius: 8,
                       color: isFav(selectedCourse.id || selectedCourse.club_id) ? "#fbbf24" : "var(--text3)",
-                      fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      fontWeight: 700, fontSize: 15, cursor: "pointer",
                     }}>{isFav(selectedCourse.id || selectedCourse.club_id) ? "★ Saved" : "☆ Fav"}</button>
                   </div>
                 </div>
@@ -1262,11 +1262,11 @@
                   textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
                   <div>
-                    <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>
+                    <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 15 }}>
                       {c.club_name || c.name}
                       {c.course_name && c.course_name !== c.club_name && !(c.club_name||"").includes(c.course_name) ? <span style={{ color: "#4ade80", fontWeight: 500 }}> · {c.course_name}</span> : null}
                     </div>
-                    <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>
+                    <div style={{ color: "var(--text3)", fontSize: 13, marginTop: 2 }}>
                       {[
                         c.location?.city && c.location.city !== "Unknown" ? c.location.city : null,
                         c.location?.state && c.location.state !== "Unknown" ? c.location.state : null,
@@ -1285,7 +1285,7 @@
           {tab === "favorites" && (
             <div>
               {favorites.length === 0 && (
-                <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 14 }}>
+                <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 16 }}>
                   No favorites yet. Search for a course and tap ☆ Fav to save it.
                 </div>
               )}
@@ -1293,8 +1293,8 @@
                 <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 10, marginBottom: 8, overflow: "hidden" }}>
                   <div style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{c.name}</div>
-                      <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{c.state}</div>
+                      <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 15 }}>{c.name}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 13, marginTop: 2 }}>{c.state}</div>
                     </div>
                     <span style={{ color: "#fbbf24", fontSize: 16 }}>★</span>
                   </div>
@@ -1319,11 +1319,11 @@
                       applyCoursePars(course);
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
-                      color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      color: "#4ade80", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     }}>✓ Use Course</button>
                     <button onClick={() => saveFavorites(favorites.filter((_, fi) => fi !== i))} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
-                      color: "#ef4444", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
                     }}>✕ Remove</button>
                   </div>
                 </div>
@@ -1336,7 +1336,7 @@
             <div>
               {/* Build new course */}
               <div style={{ background: "var(--surface)", borderRadius: 12, padding: 14, border: "1px solid var(--surface2)", marginBottom: 14 }}>
-                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Build a Course</div>
+                <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Build a Course</div>
                 <input value={newCourseName} onChange={e => setNewCourseName(e.target.value)}
                   placeholder="Course name" style={{ ...inputStyle, marginBottom: 8 }} />
                 <select value={newCourseState} onChange={e => setNewCourseState(e.target.value)}
@@ -1344,16 +1344,16 @@
                   <option value="">State (optional)</option>
                   {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, marginBottom: 8, letterSpacing: "0.06em" }}>SET PAR PER HOLE</div>
+                <div style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, marginBottom: 8, letterSpacing: "0.06em" }}>SET PAR PER HOLE</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 4, marginBottom: 10 }}>
                   {newCoursePars.map((par, i) => (
                     <div key={i} style={{ textAlign: "center" }}>
-                      <div style={{ color: "var(--text3)", fontSize: 9, fontWeight: 600, marginBottom: 2 }}>{i+1}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 600, marginBottom: 2 }}>{i+1}</div>
                       <select value={par} onChange={e => {
                         const p = [...newCoursePars]; p[i] = Number(e.target.value); setNewCoursePars(p);
                       }} style={{
                         width: "100%", background: "var(--surface2)", border: "1px solid var(--border)",
-                        borderRadius: 4, color: "#4ade80", fontSize: 12, fontWeight: 700,
+                        borderRadius: 4, color: "#4ade80", fontSize: 14, fontWeight: 700,
                         textAlign: "center", padding: "3px 0", outline: "none",
                       }}>
                         <option value={3}>3</option>
@@ -1363,30 +1363,30 @@
                     </div>
                   ))}
                 </div>
-                <div style={{ color: "var(--text3)", fontSize: 11, marginBottom: 10 }}>
+                <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 10 }}>
                   Total par: {newCoursePars.reduce((a,b) => a+b, 0)}
                 </div>
                 <button onClick={saveCustomCourse} disabled={!newCourseName.trim()} style={{
                   width: "100%", padding: "10px", background: newCourseName.trim() ? "#166534" : "var(--surface2)",
                   border: "none", borderRadius: 8, color: newCourseName.trim() ? "#4ade80" : "var(--text4)",
-                  fontWeight: 700, fontSize: 13, cursor: newCourseName.trim() ? "pointer" : "default",
+                  fontWeight: 700, fontSize: 15, cursor: newCourseName.trim() ? "pointer" : "default",
                 }}>+ Save Course</button>
               </div>
 
               {/* Saved custom courses */}
               {customCourses.length === 0 && (
-                <div style={{ color: "var(--text4)", textAlign: "center", fontSize: 13 }}>No custom courses yet.</div>
+                <div style={{ color: "var(--text4)", textAlign: "center", fontSize: 15 }}>No custom courses yet.</div>
               )}
               {customCourses.map((c, i) => (
                 <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 10, marginBottom: 8, overflow: "hidden" }}>
                   <div style={{ padding: "12px 14px" }}>
-                    <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 13 }}>{c.name}</div>
-                    <div style={{ color: "var(--text3)", fontSize: 11, marginTop: 2 }}>{c.state || "Custom"} · Par {c.pars.reduce((a,b)=>a+b,0)}</div>
+                    <div style={{ color: "var(--text)", fontWeight: 600, fontSize: 15 }}>{c.name}</div>
+                    <div style={{ color: "var(--text3)", fontSize: 13, marginTop: 2 }}>{c.state || "Custom"} · Par {c.pars.reduce((a,b)=>a+b,0)}</div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 3, marginTop: 8 }}>
                       {c.pars.map((par, hi) => (
                         <div key={hi} style={{ textAlign: "center" }}>
-                          <div style={{ color: "var(--text3)", fontSize: 9 }}>{hi+1}</div>
-                          <div style={{ background: "var(--surface2)", borderRadius: 3, color: "#4ade80", fontSize: 11, fontWeight: 700, padding: "2px 0" }}>{par}</div>
+                          <div style={{ color: "var(--text3)", fontSize: 12 }}>{hi+1}</div>
+                          <div style={{ background: "var(--surface2)", borderRadius: 3, color: "#4ade80", fontSize: 13, fontWeight: 700, padding: "2px 0" }}>{par}</div>
                         </div>
                       ))}
                     </div>
@@ -1394,11 +1394,11 @@
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
                     <button onClick={() => applyCustomCourse(c)} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
-                      color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      color: "#4ade80", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     }}>✓ Use Course</button>
                     <button onClick={() => saveCustomCourses(customCourses.filter((_,ci) => ci !== i))} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
-                      color: "#ef4444", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                      color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
                     }}>🗑 Delete</button>
                   </div>
                 </div>
@@ -1412,7 +1412,7 @@
     // ── SummaryView ──────────────────────────────────────────────────
     function SummaryView({ round }) {
       const played = round.holes.filter(h => h.score !== "");
-      if (played.length === 0) return <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 14 }}>Enter scores to see your summary.</div>;
+      if (played.length === 0) return <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 16 }}>Enter scores to see your summary.</div>;
       const totalScore = played.reduce((s, h) => s + Number(h.score), 0);
       const totalPar   = played.reduce((s, h) => s + Number(h.par), 0);
       const totalPutts = played.filter(h => h.putts !== "").reduce((s, h) => s + Number(h.putts), 0);
@@ -1437,14 +1437,14 @@
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 18 }}>
             {stats.map(s => (
               <div key={s.label} style={{ background: "var(--surface)", borderRadius: 12, padding: "14px 16px", border: "1px solid var(--surface2)" }}>
-                <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>{s.label}</div>
+                <div style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>{s.label}</div>
                 <div style={{ color: "var(--text)", fontSize: 26, fontWeight: 800, lineHeight: 1.1, marginTop: 4 }}>{s.value}</div>
-                <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{s.sub}</div>
+                <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{s.sub}</div>
               </div>
             ))}
           </div>
           <div style={{ background: "var(--surface)", borderRadius: 12, padding: "14px 16px", border: "1px solid var(--surface2)" }}>
-            <div style={{ color: "var(--text3)", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Score Breakdown</div>
+            <div style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Score Breakdown</div>
             {[
               { key: "eagle", label: "Eagle+", color: "#f59e0b" }, { key: "birdie", label: "Birdie", color: "#22c55e" },
               { key: "par", label: "Par", color: "#3b82f6" }, { key: "bogey", label: "Bogey", color: "#f87171" },
@@ -1452,8 +1452,8 @@
             ].filter(r => breakdown[r.key] > 0).map(r => (
               <div key={r.key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
                 <div style={{ width: 10, height: 10, borderRadius: 3, background: r.color, flexShrink: 0 }} />
-                <div style={{ color: "var(--text2)", fontSize: 13, flex: 1 }}>{r.label}</div>
-                <div style={{ background: r.color+"22", color: r.color, borderRadius: 20, padding: "1px 9px", fontSize: 12, fontWeight: 700 }}>{breakdown[r.key]}</div>
+                <div style={{ color: "var(--text2)", fontSize: 15, flex: 1 }}>{r.label}</div>
+                <div style={{ background: r.color+"22", color: r.color, borderRadius: 20, padding: "1px 9px", fontSize: 14, fontWeight: 700 }}>{breakdown[r.key]}</div>
                 <div style={{ background: "var(--surface2)", borderRadius: 6, height: 6, flex: 2, overflow: "hidden" }}>
                   <div style={{ width: `${breakdown[r.key]/played.length*100}%`, height: "100%", background: r.color, borderRadius: 6 }} />
                 </div>
@@ -1467,7 +1467,7 @@
     // ── CHGSSummary ──────────────────────────────────────────────────
     function CHGSSummary({ round }) {
       const played = round.holes.filter(h => h.chgsScore !== "");
-      if (played.length === 0) return <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 14 }}>Enter CHGS stats to see your summary.</div>;
+      if (played.length === 0) return <div style={{ color: "var(--text4)", textAlign: "center", padding: "32px 0", fontSize: 16 }}>Enter CHGS stats to see your summary.</div>;
       const totalScore = played.reduce((s, h) => s + Number(h.chgsScore), 0);
       const totalPar   = played.reduce((s, h) => s + Number(h.par), 0);
       const diff       = totalScore - totalPar;
@@ -1493,17 +1493,17 @@
         <div>
           <div style={{ background: "var(--surface-blue)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, border: "1px solid #1e40af44", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ fontWeight: 800, fontSize: 15, color: "#60a5fa", letterSpacing: "0.04em" }}>CHGS</div>
-            <div style={{ color: "var(--text3)", fontSize: 12 }}>Christopher Howard Golf School</div>
+            <div style={{ color: "var(--text3)", fontSize: 14 }}>Christopher Howard Golf School</div>
             <div style={{ marginLeft: "auto", color: "var(--text)", fontWeight: 800, fontSize: 16 }}>
-              {totalScore} <span style={{ color: diff < 0 ? "#4ade80" : diff > 0 ? "#f87171" : "var(--text3)", fontSize: 13 }}>({diff === 0 ? "E" : diff > 0 ? "+"+diff : diff})</span>
+              {totalScore} <span style={{ color: diff < 0 ? "#4ade80" : diff > 0 ? "#f87171" : "var(--text3)", fontSize: 15 }}>({diff === 0 ? "E" : diff > 0 ? "+"+diff : diff})</span>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
             {cards.map(c => (
               <div key={c.label} style={{ background: "var(--surface)", borderRadius: 12, padding: "13px 14px", border: `1px solid ${c.accent}33` }}>
-                <div style={{ color: "var(--text3)", fontSize: 10, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase" }}>{c.label}</div>
+                <div style={{ color: "var(--text3)", fontSize: 12, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase" }}>{c.label}</div>
                 <div style={{ color: "var(--text)", fontSize: 24, fontWeight: 800, lineHeight: 1.1, marginTop: 3 }}>{c.value}</div>
-                {c.sub && <div style={{ color: c.accent, fontSize: 11, marginTop: 2, fontWeight: 600 }}>{c.sub}</div>}
+                {c.sub && <div style={{ color: c.accent, fontSize: 13, marginTop: 2, fontWeight: 600 }}>{c.sub}</div>}
               </div>
             ))}
           </div>
@@ -1645,14 +1645,14 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v26</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v27</span>
                 </div>
-                {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
+                {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button id="theme-toggle" onClick={() => setLightMode(!lightMode)} title="Toggle light/dark" style={{ background: "var(--surface-blue)", color: "#fbbf24", border: "none", borderRadius: 8, padding: "7px 10px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{lightMode ? "🌙" : "☀️"}</button>
-                <button onClick={() => setShowShare(true)} style={{ background: "var(--surface-blue)", color: "#60a5fa", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>↑ Share</button>
-                <button onClick={addRound} style={{ background: "#166534", color: "#4ade80", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>+ New</button>
+                <button id="theme-toggle" onClick={() => setLightMode(!lightMode)} title="Toggle light/dark" style={{ background: "var(--surface-blue)", color: "#fbbf24", border: "none", borderRadius: 8, padding: "7px 10px", fontWeight: 700, fontSize: 16, cursor: "pointer" }}>{lightMode ? "🌙" : "☀️"}</button>
+                <button onClick={() => setShowShare(true)} style={{ background: "var(--surface-blue)", color: "#60a5fa", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>↑ Share</button>
+                <button onClick={addRound} style={{ background: "#166534", color: "#4ade80", border: "none", borderRadius: 8, padding: "7px 12px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>+ New</button>
               </div>
             </div>
             <div style={{ display: "flex" }}>
@@ -1662,7 +1662,7 @@
                 return (
                   <button key={id} onClick={() => setView(id)} style={{
                     flex: 1, padding: "8px 0", border: "none", background: "transparent",
-                    color: isActive ? ac : "var(--text3)", fontWeight: 700, fontSize: 11, cursor: "pointer",
+                    color: isActive ? ac : "var(--text3)", fontWeight: 700, fontSize: 13, cursor: "pointer",
                     borderBottom: isActive ? `2px solid ${ac}` : "2px solid transparent",
                     letterSpacing: "0.03em", transition: "color 0.15s",
                   }}>{label}</button>
@@ -1677,15 +1677,15 @@
               <>
                 <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                   <input value={round.course} onChange={e => updateRoundMeta("course", e.target.value)} placeholder="Course name"
-                    style={{ flex: 2, background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 9, padding: "8px 12px", color: "var(--text)", fontSize: 13, outline: "none" }} />
+                    style={{ flex: 2, background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 9, padding: "8px 12px", color: "var(--text)", fontSize: 15, outline: "none" }} />
                   <input type="date" value={round.date} onChange={e => updateRoundMeta("date", e.target.value)}
-                    style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 9, padding: "8px 10px", color: "var(--text3)", fontSize: 12, outline: "none", colorScheme: "dark" }} />
+                    style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 9, padding: "8px 10px", color: "var(--text3)", fontSize: 14, outline: "none", colorScheme: "dark" }} />
                 </div>
                 <div style={{ display: "flex", background: "var(--surface)", borderRadius: 10, border: "1px solid var(--surface2)", padding: 3, marginBottom: 14 }}>
                   {["front","back"].map(half => (
                     <button key={half} onClick={() => setActiveHalf(half)} style={{
                       flex: 1, border: "none", borderRadius: 8, background: activeHalf === half ? "#166534" : "transparent",
-                      color: activeHalf === half ? "#4ade80" : "var(--text3)", fontWeight: 700, fontSize: 13, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
+                      color: activeHalf === half ? "#4ade80" : "var(--text3)", fontWeight: 700, fontSize: 15, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
                     }}>{half === "front" ? "Front 9 (1–9)" : "Back 9 (10–18)"}</button>
                   ))}
                 </div>
@@ -1700,7 +1700,7 @@
               <>
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{round.course || "Untitled Round"}</div>
-                  <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{round.date}</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{round.date}</div>
                 </div>
                 <SummaryView round={round} />
               </>
@@ -1712,7 +1712,7 @@
                   {[{id:"entry",label:"Enter Stats"},{id:"chgssummary",label:"Summary"}].map(t => (
                     <button key={t.id} onClick={() => setChgsTab(t.id)} style={{
                       flex: 1, border: "none", borderRadius: 8, background: chgsTab === t.id ? "var(--surface-blue)" : "transparent",
-                      color: chgsTab === t.id ? "#60a5fa" : "var(--text3)", fontWeight: 700, fontSize: 13, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
+                      color: chgsTab === t.id ? "#60a5fa" : "var(--text3)", fontWeight: 700, fontSize: 15, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
                     }}>{t.label}</button>
                   ))}
                 </div>
@@ -1722,7 +1722,7 @@
                       {["front","back"].map(half => (
                         <button key={half} onClick={() => setActiveHalf(half)} style={{
                           flex: 1, border: "none", borderRadius: 8, background: activeHalf === half ? "var(--surface-blue)" : "transparent",
-                          color: activeHalf === half ? "#60a5fa" : "var(--text3)", fontWeight: 700, fontSize: 13, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
+                          color: activeHalf === half ? "#60a5fa" : "var(--text3)", fontWeight: 700, fontSize: 15, padding: "7px 0", cursor: "pointer", transition: "all 0.15s",
                         }}>{half === "front" ? "Front 9 (1–9)" : "Back 9 (10–18)"}</button>
                       ))}
                     </div>
@@ -1736,7 +1736,7 @@
                   <>
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{round.course || "Untitled Round"}</div>
-                      <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{round.date}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{round.date}</div>
                     </div>
                     <CHGSSummary round={round} />
                   </>
@@ -1748,7 +1748,7 @@
               <>
                 <div style={{ marginBottom: 14 }}>
                   <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>Course Selector</div>
-                  <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>Search, favorite, or build your own courses. Selecting a course auto-fills hole pars for your current round.</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>Search, favorite, or build your own courses. Selecting a course auto-fills hole pars for your current round.</div>
                 </div>
                 <CoursesTab onSelectCourse={onSelectCourse} />
               </>
@@ -1757,9 +1757,9 @@
             {view === "shared" && sharedRound && (
               <div>
                 <div style={{ background: "var(--surface-blue)", borderRadius: 12, padding: "12px 14px", marginBottom: 14, border: "1px solid #1e40af44" }}>
-                  <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 13, marginBottom: 4 }}>📎 Shared Round</div>
+                  <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>📎 Shared Round</div>
                   <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 15 }}>{sharedRound.course || "Untitled Round"}</div>
-                  <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{sharedRound.date}</div>
+                  <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{sharedRound.date}</div>
                   <button onClick={() => {
                     const exists = rounds.some(r => r.date === sharedRound.date && r.course === sharedRound.course);
                     if (!exists) {
@@ -1774,13 +1774,13 @@
                     setView("summary");
                   }} style={{
                     marginTop: 10, width: "100%", padding: "9px", borderRadius: 8, border: "none",
-                    background: "#166534", color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer",
+                    background: "#166534", color: "#4ade80", fontWeight: 700, fontSize: 15, cursor: "pointer",
                   }}>+ Save to My Rounds</button>
                 </div>
                 <SummaryView round={sharedRound} />
                 {sharedRound.holes.some(h => h.chgsScore !== "") && (
                   <div style={{ marginTop: 14 }}>
-                    <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 13, marginBottom: 10, letterSpacing: "0.04em" }}>CHGS STATS</div>
+                    <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 15, marginBottom: 10, letterSpacing: "0.04em" }}>CHGS STATS</div>
                     <CHGSSummary round={sharedRound} />
                   </div>
                 )}
@@ -1789,7 +1789,7 @@
 
             {view === "rounds" && (
               <>
-                <div style={{ color: "var(--text3)", fontSize: 12, marginBottom: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                <div style={{ color: "var(--text3)", fontSize: 14, marginBottom: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                   Saved Rounds ({rounds.length})
                 </div>
                 {rounds.map((r, i) => {
@@ -1810,13 +1810,13 @@
                           display: "flex", justifyContent: "space-between", alignItems: "center",
                         }}>
                           <div>
-                            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 14 }}>{r.course || "Untitled Round"}</div>
-                            <div style={{ color: "var(--text3)", fontSize: 12, marginTop: 2 }}>{r.date} · {played.length}/18 holes</div>
+                            <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{r.course || "Untitled Round"}</div>
+                            <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{r.date} · {played.length}/18 holes</div>
                           </div>
                           {played.length > 0 && (
                             <div style={{ textAlign: "right" }}>
                               <div style={{ color: "var(--text)", fontWeight: 800, fontSize: 20 }}>{totalScore}</div>
-                              <div style={{ color: diff < 0 ? "#4ade80" : diff > 0 ? "#f87171" : "var(--text3)", fontSize: 12, fontWeight: 700 }}>
+                              <div style={{ color: diff < 0 ? "#4ade80" : diff > 0 ? "#f87171" : "var(--text3)", fontSize: 14, fontWeight: 700 }}>
                                 {diff === 0 ? "E" : diff > 0 ? "+"+diff : diff}
                               </div>
                             </div>
@@ -1825,24 +1825,24 @@
                         <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
                           <button onClick={() => { setActiveRound(i); setView("summary"); }} style={{
                             flex: 1, padding: "8px", background: "transparent", border: "none",
-                            color: "var(--text3)", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            color: "var(--text3)", fontSize: 13, fontWeight: 600, cursor: "pointer",
                           }}>📊 Summary</button>
                           <button onClick={() => { setActiveRound(i); setShowShare(true); }} style={{
                             flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
-                            color: "#60a5fa", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            color: "#60a5fa", fontSize: 13, fontWeight: 600, cursor: "pointer",
                           }}>↑ Share</button>
                           <button onClick={() => setDeleteConfirm(i)} style={{
                             flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
-                            color: "#ef4444", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                            color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
                           }}>🗑 Delete</button>
                         </div>
                       </div>
                       {deleteConfirm === i && (
                         <div style={{ background: "#1c0a0a", border: "1px solid #7f1d1d", borderRadius: 10, padding: "12px 14px", marginTop: 6 }}>
-                          <div style={{ color: "#f87171", fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Delete this round? This cannot be undone.</div>
+                          <div style={{ color: "#f87171", fontSize: 15, fontWeight: 600, marginBottom: 10 }}>Delete this round? This cannot be undone.</div>
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => deleteRound(i)} style={{ flex: 1, padding: "8px", background: "#7f1d1d", border: "none", borderRadius: 8, color: "#fca5a5", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Yes, Delete</button>
-                            <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: "8px", background: "var(--surface2)", border: "none", borderRadius: 8, color: "var(--text3)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Cancel</button>
+                            <button onClick={() => deleteRound(i)} style={{ flex: 1, padding: "8px", background: "#7f1d1d", border: "none", borderRadius: 8, color: "#fca5a5", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Yes, Delete</button>
+                            <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: "8px", background: "var(--surface2)", border: "none", borderRadius: 8, color: "var(--text3)", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Cancel</button>
                           </div>
                         </div>
                       )}
@@ -1863,7 +1863,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "26";
+      var CURRENT_VERSION = "27";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
