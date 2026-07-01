@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v28</title>
+  <title>GolfLog v29</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -1560,7 +1560,14 @@
         } catch {}
         return [defaultRound()];
       });
-      const [activeRound, setActiveRound] = useState(0);
+      const [activeRound, setActiveRound] = useState(() => {
+        try {
+          const saved = parseInt(localStorage.getItem("golflog_active_round"));
+          const roundsData = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          if (!isNaN(saved) && saved >= 0 && saved < roundsData.length) return saved;
+        } catch {}
+        return 0;
+      });
       const [view, setView] = useState("scorecard");
       const [activeHalf, setActiveHalf] = useState("front");
       const [chgsTab, setChgsTab] = useState("entry");
@@ -1572,6 +1579,11 @@
       useEffect(() => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rounds)); } catch {}
       }, [rounds]);
+
+      // Persist which round is active so refresh returns to it
+      useEffect(() => {
+        try { localStorage.setItem("golflog_active_round", String(activeRound)); } catch {}
+      }, [activeRound]);
 
       // Load shared round from URL
       useEffect(() => {
@@ -1661,7 +1673,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v28</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v29</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1879,7 +1891,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "28";
+      var CURRENT_VERSION = "29";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
