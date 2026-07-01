@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v27</title>
+  <title>GolfLog v28</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -64,7 +64,7 @@
     const PAR_OPTIONS = [3, 4, 5];
 
     const defaultHole = () => ({
-      par: 4, score: "", putts: "",
+      par: 4, score: "", putts: "", chips: "",
       fairway: null, gir: null,
       chgsScore: "", chgsFairway: null,
       greenPlus80: null, greenMinus80: null,
@@ -118,17 +118,18 @@
       try {
         const rows = [];
         // Header row
-        const header = ["Date", "Course", "Total Score", "Total Par", "+/-", "Total Putts", "Fairways Hit", "GIR"];
-        for (let h = 1; h <= 18; h++) header.push("H" + h + " Par", "H" + h + " Score", "H" + h + " Putts");
+        const header = ["Date", "Course", "Total Score", "Total Par", "+/-", "Total Putts", "Total Chips", "Fairways Hit", "GIR"];
+        for (let h = 1; h <= 18; h++) header.push("H" + h + " Par", "H" + h + " Score", "H" + h + " Putts", "H" + h + " Chips");
         rows.push(header);
 
         rounds.forEach(r => {
           const holes = r.holes || [];
-          let totalScore = 0, totalPar = 0, totalPutts = 0, fairways = 0, gir = 0, fairwayCount = 0;
+          let totalScore = 0, totalPar = 0, totalPutts = 0, totalChips = 0, fairways = 0, gir = 0, fairwayCount = 0;
           holes.forEach(h => {
             if (h.score) totalScore += Number(h.score);
             if (h.par) totalPar += Number(h.par);
             if (h.putts) totalPutts += Number(h.putts);
+            if (h.chips) totalChips += Number(h.chips);
             if (h.par !== 3) { fairwayCount++; if (h.fairway === "hit") fairways++; }
             if (h.gir === true) gir++;
           });
@@ -139,12 +140,13 @@
             totalPar || "",
             totalScore && totalPar ? (totalScore - totalPar > 0 ? "+" + (totalScore - totalPar) : totalScore - totalPar) : "",
             totalPutts || "",
+            totalChips || "",
             fairwayCount ? fairways + "/" + fairwayCount : "",
             gir + "/18"
           ];
           for (let i = 0; i < 18; i++) {
             const h = holes[i] || {};
-            row.push(h.par || "", h.score || "", h.putts || "");
+            row.push(h.par || "", h.score || "", h.putts || "", h.chips || "");
           }
           rows.push(row);
         });
@@ -595,6 +597,20 @@
                   return (
                     <button key={n} onClick={() => onChange({ ...hole, putts: String(n), chgsPutts: String(n) })}
                       style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #4ade80" : "1px solid var(--border)", background: selected ? "#16a34a" : "var(--surface2)", color: selected ? "#ffffff" : "var(--text)", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CHIPS */}
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>CHIPS</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 20 }}>
+                {[0,1,2,3,4,5].map(n => {
+                  const selectedChip = String(hole.chips) === String(n);
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, chips: String(n) })}
+                      style={{ height: 48, borderRadius: 10, border: selectedChip ? "2px solid #4ade80" : "1px solid var(--border)", background: selectedChip ? "#16a34a" : "var(--surface2)", color: selectedChip ? "#ffffff" : "var(--text)", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
                       {n}
                     </button>
                   );
@@ -1645,7 +1661,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v27</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v28</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1863,7 +1879,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "27";
+      var CURRENT_VERSION = "28";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
