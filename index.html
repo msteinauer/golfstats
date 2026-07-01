@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v25</title>
+  <title>GolfLog v26</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -311,7 +311,7 @@
 
       const handleCopyText = () => {
         const text = buildTextSummary(round);
-        navigator.clipboard.writeText(text).then(() => showToast("✓ Copied to clipboard!")).catch(() => {
+        navigator.clipboard.writeText(text).then(() => { showToast("✓ Copied to clipboard!"); setTimeout(onClose, 1200); }).catch(() => {
           const el = document.createElement("textarea");
           el.value = text; document.body.appendChild(el); el.select();
           document.execCommand("copy"); document.body.removeChild(el);
@@ -386,7 +386,7 @@
               </div>
             </button>
 
-            <button onClick={() => { if(exportAllRounds(allRounds)) showToast("✓ Full backup saved!"); else showToast("Could not save file"); }} style={btnStyle("#78350f")}>
+            <button onClick={() => { if(exportAllRounds(allRounds)) { showToast("✓ Full backup saved!"); setTimeout(onClose, 1200); } else showToast("Could not save file"); }} style={btnStyle("#78350f")}>
               <span style={{ fontSize: 20 }}>💾</span>
               <div>
                 <div>Backup Everything</div>
@@ -394,7 +394,7 @@
               </div>
             </button>
 
-            <button onClick={() => { if(exportRoundsCSV(allRounds)) showToast("✓ Scores CSV saved!"); else showToast("Could not save file"); }} style={btnStyle("#166534")}>
+            <button onClick={() => { if(exportRoundsCSV(allRounds)) { showToast("✓ Scores CSV saved!"); setTimeout(onClose, 1200); } else showToast("Could not save file"); }} style={btnStyle("#166534")}>
               <span style={{ fontSize: 20 }}>📊</span>
               <div>
                 <div>Export Scores (Excel/CSV)</div>
@@ -402,7 +402,7 @@
               </div>
             </button>
 
-            <button onClick={() => { if(exportCHGSCSV(allRounds)) showToast("✓ CHGS CSV saved!"); else showToast("Could not save file"); }} style={btnStyle("#1e40af")}>
+            <button onClick={() => { if(exportCHGSCSV(allRounds)) { showToast("✓ CHGS CSV saved!"); setTimeout(onClose, 1200); } else showToast("Could not save file"); }} style={btnStyle("#1e40af")}>
               <span style={{ fontSize: 20 }}>📊</span>
               <div>
                 <div>Export CHGS Stats (Excel/CSV)</div>
@@ -1645,7 +1645,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v25</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v26</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1863,7 +1863,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "25";
+      var CURRENT_VERSION = "26";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
