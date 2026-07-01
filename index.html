@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v23</title>
+  <title>GolfLog v24</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -94,6 +94,99 @@
         const a = document.createElement("a");
         a.href = url;
         a.download = `golflog-backup-${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return true;
+      } catch { return false; }
+    }
+
+    function exportRoundsCSV(rounds) {
+      try {
+        const rows = [];
+        // Header row
+        const header = ["Date", "Course", "Total Score", "Total Par", "+/-", "Total Putts", "Fairways Hit", "GIR"];
+        for (let h = 1; h <= 18; h++) header.push("H" + h + " Par", "H" + h + " Score", "H" + h + " Putts");
+        rows.push(header);
+
+        rounds.forEach(r => {
+          const holes = r.holes || [];
+          let totalScore = 0, totalPar = 0, totalPutts = 0, fairways = 0, gir = 0, fairwayCount = 0;
+          holes.forEach(h => {
+            if (h.score) totalScore += Number(h.score);
+            if (h.par) totalPar += Number(h.par);
+            if (h.putts) totalPutts += Number(h.putts);
+            if (h.par !== 3) { fairwayCount++; if (h.fairway === "hit") fairways++; }
+            if (h.gir === true) gir++;
+          });
+          const row = [
+            r.date || "",
+            '"' + (r.course || "Unnamed").replace(/"/g, '""') + '"',
+            totalScore || "",
+            totalPar || "",
+            totalScore && totalPar ? (totalScore - totalPar > 0 ? "+" + (totalScore - totalPar) : totalScore - totalPar) : "",
+            totalPutts || "",
+            fairwayCount ? fairways + "/" + fairwayCount : "",
+            gir + "/18"
+          ];
+          for (let i = 0; i < 18; i++) {
+            const h = holes[i] || {};
+            row.push(h.par || "", h.score || "", h.putts || "");
+          }
+          rows.push(row);
+        });
+
+        const csv = rows.map(r => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `golflog-rounds-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return true;
+      } catch { return false; }
+    }
+
+    function exportCHGSCSV(rounds) {
+      try {
+        const rows = [];
+        const header = ["Date", "Course", "Hole", "Par", "Score", "Putts", "Fairway", "Green +80", "Green -80", "Up & Down"];
+        rows.push(header);
+
+        const fmt = v => v === true ? "Hit" : v === false ? "Miss" : (v === "na" ? "N/A" : (v || ""));
+        const fmtUD = v => v === true ? "Yes" : v === false ? "No" : "";
+
+        rounds.forEach(r => {
+          const holes = r.holes || [];
+          holes.forEach((h, i) => {
+            // Only include holes that have CHGS data entered
+            const hasData = h.chgsScore || h.chgsPutts || h.chgsFairway || h.greenPlus80 != null || h.greenMinus80 != null || h.upAndDown != null;
+            if (!hasData) return;
+            rows.push([
+              r.date || "",
+              '"' + (r.course || "Unnamed").replace(/"/g, '""') + '"',
+              i + 1,
+              h.par || "",
+              h.chgsScore || h.score || "",
+              h.chgsPutts || h.putts || "",
+              h.chgsFairway === "hit" ? "Hit" : (h.chgsFairway === "left" ? "Left" : (h.chgsFairway === "right" ? "Right" : "")),
+              fmt(h.greenPlus80),
+              fmt(h.greenMinus80),
+              fmtUD(h.upAndDown)
+            ]);
+          });
+        });
+
+        const csv = rows.map(r => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `golflog-chgs-${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -275,8 +368,24 @@
             <button onClick={() => { if(exportAllRounds(allRounds)) showToast("✓ Backup file saved!"); else showToast("Could not save file"); }} style={btnStyle("#78350f")}>
               <span style={{ fontSize: 20 }}>💾</span>
               <div>
-                <div>Export All Rounds</div>
+                <div>Export All Rounds (Backup)</div>
                 <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Save a backup file of all rounds to your phone</div>
+              </div>
+            </button>
+
+            <button onClick={() => { if(exportRoundsCSV(allRounds)) showToast("✓ Scores CSV saved!"); else showToast("Could not save file"); }} style={btnStyle("#166534")}>
+              <span style={{ fontSize: 20 }}>📊</span>
+              <div>
+                <div>Export Scores (Excel/CSV)</div>
+                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Scores, putts &amp; stats — opens in Excel</div>
+              </div>
+            </button>
+
+            <button onClick={() => { if(exportCHGSCSV(allRounds)) showToast("✓ CHGS CSV saved!"); else showToast("Could not save file"); }} style={btnStyle("#1e40af")}>
+              <span style={{ fontSize: 20 }}>📊</span>
+              <div>
+                <div>Export CHGS Stats (Excel/CSV)</div>
+                <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>CHGS hole-by-hole — opens in Excel</div>
               </div>
             </button>
 
@@ -1515,7 +1624,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v23</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 9, color: "var(--border)", marginLeft: 3 }}>v24</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 13, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1733,7 +1842,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "23";
+      var CURRENT_VERSION = "24";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
