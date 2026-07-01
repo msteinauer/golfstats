@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v29</title>
+  <title>GolfLog v30</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -168,7 +168,7 @@
     function exportCHGSCSV(rounds) {
       try {
         const rows = [];
-        const header = ["Date", "Course", "Hole", "Par", "Score", "Putts", "Fairway", "Green +80", "Green -80", "Up & Down"];
+        const header = ["Date", "Course", "Hole", "Par", "Score", "Putts", "Chips", "Fairway", "Green +80", "Green -80", "Up & Down"];
         rows.push(header);
 
         const fmt = v => v === true ? "Hit" : v === false ? "Miss" : (v === "na" ? "N/A" : (v || ""));
@@ -178,7 +178,7 @@
           const holes = r.holes || [];
           holes.forEach((h, i) => {
             // Only include holes that have CHGS data entered
-            const hasData = h.chgsScore || h.chgsPutts || h.chgsFairway || h.greenPlus80 != null || h.greenMinus80 != null || h.upAndDown != null;
+            const hasData = h.chgsScore || h.chgsPutts || h.chips || h.chgsFairway || h.greenPlus80 != null || h.greenMinus80 != null || h.upAndDown != null;
             if (!hasData) return;
             rows.push([
               r.date || "",
@@ -187,6 +187,7 @@
               h.par || "",
               h.chgsScore || h.score || "",
               h.chgsPutts || h.putts || "",
+              h.chips || "",
               h.chgsFairway === "hit" ? "Hit" : (h.chgsFairway === "left" ? "Left" : (h.chgsFairway === "right" ? "Right" : "")),
               fmt(h.greenPlus80),
               fmt(h.greenMinus80),
@@ -823,6 +824,20 @@
                   return (
                     <button key={n} onClick={() => onChange({ ...hole, chgsPutts: String(n), putts: String(n) })}
                       style={{ height: 48, borderRadius: 10, border: selected ? "2px solid #60a5fa" : "1px solid var(--border)", background: selected ? "#2563eb" : "var(--surface2)", color: "#ffffff", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CHIPS */}
+              <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>CHIPS</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 24 }}>
+                {[0,1,2,3,4,5].map(n => {
+                  const selectedChip = String(hole.chips) === String(n);
+                  return (
+                    <button key={n} onClick={() => onChange({ ...hole, chips: String(n) })}
+                      style={{ height: 48, borderRadius: 10, border: selectedChip ? "2px solid #60a5fa" : "1px solid var(--border)", background: selectedChip ? "#2563eb" : "var(--surface2)", color: "#ffffff", fontSize: 18, fontWeight: 800, cursor: "pointer" }}>
                       {n}
                     </button>
                   );
@@ -1673,7 +1688,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v29</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v30</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1891,7 +1906,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "29";
+      var CURRENT_VERSION = "30";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
