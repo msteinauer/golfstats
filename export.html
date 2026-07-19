@@ -32,23 +32,21 @@
 <div class="card" id="dlcard" style="display:none;">
   <div style="font-weight:700; margin-bottom:8px;">Downloads ready</div>
   <button class="dl" onclick="downloadIndex()">⬇️ Download courses-index.json</button>
-  <button class="dl" id="dlbuckets" onclick="downloadBuckets()">⬇️ Download tee data (ZIP)</button>
-  <div class="muted" style="margin-top:10px;">Upload courses-index.json to the repo root, and unzip the tees folder into the repo.</div>
+  <button class="dl" onclick="downloadTees()">⬇️ Download courses-tees.json</button>
+  <div class="muted" style="margin-top:10px;">Upload both files to the repo root — no folders needed.</div>
 </div>
 
 <div class="card">
   <div class="log" id="log">Ready.</div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const SUPABASE_URL = "https://koingualzctoyulzytxb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
-const BUCKET_SIZE = 500; // courses per tee-data file
 
 let allCourses = [];
 let indexData = [];
-let buckets = {};
+let teesData = {};
 
 function log(msg) {
   const el = document.getElementById("log");
@@ -58,7 +56,7 @@ function log(msg) {
 
 async function startExport() {
   document.getElementById("start").disabled = true;
-  allCourses = []; indexData = []; buckets = {};
+  allCourses = []; indexData = []; teesData = {};
   log("Starting export...");
 
   const PAGE = 1000;
@@ -92,12 +90,10 @@ async function startExport() {
           co: c.country || "",
           h: c.number_of_holes || 18
         });
-        // Tee bucket entry: full data
-        const bucket = Math.floor(c.id / BUCKET_SIZE);
-        if (!buckets[bucket]) buckets[bucket] = {};
+        // Tee entry: full data, keyed by course id
         let tees = c.tees;
         if (typeof tees === "string") { try { tees = JSON.parse(tees); } catch { tees = {}; } }
-        buckets[bucket][c.id] = {
+        teesData[c.id] = {
           id: c.id,
           club_name: c.club_name,
           course_name: c.course_name || c.club_name,
@@ -121,7 +117,7 @@ async function startExport() {
   }
 
   document.getElementById("bar").style.width = "100%";
-  log(`\nDONE. ${allCourses.length} courses, ${Object.keys(buckets).length} tee buckets.`);
+  log(`\nDONE. ${allCourses.length} courses exported.`);
   document.getElementById("dlcard").style.display = "block";
 }
 
