@@ -1259,7 +1259,7 @@
                       flex: 2, padding: "10px", background: "#166534", border: "none",
                       borderRadius: 8, color: "#4ade80", fontWeight: 700, fontSize: 15, cursor: "pointer",
                     }}>✓ Use This Course</button>
-                    <button onClick={() => toggleFav({ id: selectedCourse.id || selectedCourse.club_id, name: selectedCourse.club_name || selectedCourse.name, state, holes: selectedCourse.holes || selectedCourse.tees?.[0]?.holes || [] })} style={{
+                    <button onClick={() => toggleFav({ id: selectedCourse.id || selectedCourse.club_id, name: selectedCourse.club_name || selectedCourse.name, state, holes: selectedCourse.holes || selectedCourse.tees?.[0]?.holes || [], tees: selectedCourse.tees || null })} style={{
                       flex: 1, padding: "10px", background: isFav(selectedCourse.id || selectedCourse.club_id) ? "#78350f" : "var(--surface2)",
                       border: "none", borderRadius: 8,
                       color: isFav(selectedCourse.id || selectedCourse.club_id) ? "#fbbf24" : "var(--text3)",
@@ -1331,10 +1331,9 @@
                   </div>
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
                     <button onClick={async () => {
-                      // If tees is missing or empty, fetch from Supabase first
-                      let course = c;
-                      const tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
-                      if (!tees.male && !tees.female) {
+                      // Use stored tees if present; only fetch as fallback
+                      let tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
+                      if (!tees || (!tees.male && !tees.female)) {
                         try {
                           const res = await fetch(
                             `https://koingualzctoyulzytxb.supabase.co/rest/v1/courses?select=tees&id=eq.${c.id}&limit=1`,
@@ -1342,12 +1341,14 @@
                           );
                           const rows = await res.json();
                           if (rows[0]?.tees) {
-                            const freshTees = typeof rows[0].tees === "string" ? JSON.parse(rows[0].tees) : rows[0].tees;
-                            course = {...c, tees: freshTees};
+                            tees = typeof rows[0].tees === "string" ? JSON.parse(rows[0].tees) : rows[0].tees;
                           }
                         } catch {}
                       }
-                      applyCoursePars(course);
+                      // Open the tee selector so the user can pick a tee box
+                      setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
+                      setSelectedTee(null);
+                      setView("courses");
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
                       color: "#4ade80", fontSize: 13, fontWeight: 700, cursor: "pointer",
