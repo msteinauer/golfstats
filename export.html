@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GolfLog Export Tool</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; background: #0f1b2d; color: #f1f5f9; margin: 0; padding: 20px; max-width: 600px; margin: 0 auto; }
+  h1 { font-size: 22px; }
+  .card { background: #1a2942; border: 1px solid #3d5478; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  button { width: 100%; padding: 14px; border-radius: 10px; border: none; background: #16a34a; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  button:disabled { background: #26395a; color: #7c8db0; }
+  .dl { background: #2563eb; }
+  .progress { height: 10px; background: #26395a; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+  .bar { height: 100%; background: #4ade80; width: 0%; transition: width 0.3s; }
+  .log { font-family: monospace; font-size: 12px; color: #94a3b8; max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+  .stat { font-size: 28px; font-weight: 800; color: #4ade80; }
+  .muted { color: #94a3b8; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>⛳ GolfLog Export Tool</h1>
+<p class="muted">Pulls all courses from Supabase and packages them as static files for GitHub. Run once, download the files, upload to your repo.</p>
+
+<div class="card">
+  <div class="stat" id="count">0</div>
+  <div class="muted">courses fetched</div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <button id="start" onclick="startExport()">Start Export</button>
+</div>
+
+<div class="card" id="dlcard" style="display:none;">
+  <div style="font-weight:700; margin-bottom:8px;">Downloads ready</div>
+  <button class="dl" onclick="downloadIndex()">⬇️ Download courses-index.json</button>
+  <button class="dl" id="dlbuckets" onclick="downloadBuckets()">⬇️ Download tee data (ZIP)</button>
+  <div class="muted" style="margin-top:10px;">Upload courses-index.json to the repo root, and unzip the tees folder into the repo.</div>
+</div>
+
+<div class="card">
+  <div class="log" id="log">Ready.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const SUPABASE_URL = "https://koingualzctoyulzytxb.supabase.co";
+const SUPABASE_KEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
+const BUCKET_SIZE = 500; // courses per tee-data file
+
+let allCourses = [];
+let indexData = [];
+let buckets = {};
+
+function log(msg) {
+  const el = document.getElementById("log");
+  el.textContent += "\n" + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function startExport() {
+  document.getElementById("start").disabled = true;
+  allCourses = []; indexData = []; buckets = {};
+  log("Starting export...");
+
+  const PAGE = 1000;
+  let from = 0;
+  let done = false;
+
+  while (!done) {
+    const to = from + PAGE - 1;
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/courses?select=id,club_name,course_name,city,state,country,latitude,longitude,number_of_holes,tees&order=id.asc`,
+        { headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Range-Unit": "items",
+          "Range": `${from}-${to}`
+        }}
+      );
+      if (!res.ok) { log("Error: HTTP " + res.status + " — " + (await res.text()).slice(0,120)); break; }
+      const rows = await res.json();
+      if (!rows.length) { done = true; break; }
+
+      rows.forEach(c => {
+        // Index entry: lightweight, for search + browse
+        indexData.push({
+          id: c.id,
+          n: c.club_name,
+          cn: c.course_name || c.club_name,
+          c: c.city || "",
+          s: c.state || "",
+          co: c.country || "",
+          h: c.number_of_holes || 18
+        });
+        // Tee bucket entry: full data
+        const bucket = Math.floor(c.id / BUCKET_SIZE);
+        if (!buckets[bucket]) buckets[bucket] = {};
+        let tees = c.tees;
+        if (typeof tees === "string") { try { tees = JSON.parse(tees); } catch { tees = {}; } }
+        buckets[bucket][c.id] = {
+          id: c.id,
+          club_name: c.club_name,
+          course_name: c.course_name || c.club_name,
+          city: c.city, state: c.state, country: c.country,
+          number_of_holes: c.number_of_holes,
+          tees: tees
+        };
+      });
+
+      allCourses = allCourses.concat(rows);
+      document.getElementById("count").textContent = allCourses.length;
+      document.getElementById("bar").style.width = Math.min(100, (allCourses.length / 24000) * 100) + "%";
+      log(`Fetched ${rows.length} (total ${allCourses.length})`);
+
+      if (rows.length < PAGE) { done = true; }
+      from += PAGE;
+    } catch (e) {
+      log("Fetch failed: " + e.message + " — retrying in 2s");
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+
+  document.getElementById("bar").style.width = "100%";
+  log(`\nDONE. ${allCourses.length} courses, ${Object.keys(buckets).length} tee buckets.`);
+  document.getElementById("dlcard").style.display = "block";
+}
+
+function downloadIndex() {
+  const blob = new Blob([JSON.stringify(indexData)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "courses-index.json";
+  a.click();
+  log("Downloaded courses-index.json (" + indexData.length + " courses)");
+}
+
+async function downloadBuckets() {
+  document.getElementById("dlbuckets").disabled = true;
+  log("Building ZIP of tee data...");
+  const zip = new JSZip();
+  const folder = zip.folder("tees");
+  Object.keys(buckets).forEach(b => {
+    folder.file(b + ".json", JSON.stringify(buckets[b]));
+  });
+  const content = await zip.generateAsync({ type: "blob" }, meta => {
+    document.getElementById("bar").style.width = meta.percent + "%";
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(content);
+  a.download = "golflog-tees.zip";
+  a.click();
+  log("Downloaded golflog-tees.zip (" + Object.keys(buckets).length + " files)");
+  document.getElementById("dlbuckets").disabled = false;
+}
+</script>
+</body>
+</html>
