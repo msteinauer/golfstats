@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v43</title>
+  <title>GolfLog v44</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -108,7 +108,7 @@
     const PAR_OPTIONS = [3, 4, 5];
 
     const defaultHole = () => ({
-      par: 4, score: "", putts: "", chips: "",
+      par: 4, yardage: null, score: "", putts: "", chips: "",
       fairway: null, gir: null,
       chgsScore: "", chgsFairway: null,
       greenPlus80: null, greenMinus80: null,
@@ -570,6 +570,7 @@
                         style={{ width: 24, height: 22, borderRadius: 5, border: "none", background: hole.par === p ? "#166534" : "var(--surface2)", color: hole.par === p ? "#4ade80" : "var(--text3)", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>{p}</button>
                     ))}
                   </div>
+                  {hole.yardage && <span style={{ color: "var(--text3)", fontSize: 13, fontWeight: 600 }}>· {hole.yardage} yds</span>}
                 </div>
               </div>
             </div>
@@ -609,7 +610,7 @@
             <div onClick={e => e.stopPropagation()} style={{ background: "var(--surface)", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid var(--surface2)", maxHeight: "88vh", overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
-                  <div style={{ color: "#4ade80", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "#4ade80", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}{hole.yardage ? ` · ${hole.yardage} yds` : ""}</div>
                   <div style={{ color: "var(--text3)", fontSize: 14 }}>Enter your stats</div>
                 </div>
                 <button onClick={() => closeScorePad()} style={{ background: "var(--surface2)", border: "none", color: "var(--text2)", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
@@ -775,7 +776,7 @@
             <div onClick={e => e.stopPropagation()} style={{ background: "var(--surface)", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: "20px 16px 32px", width: "100%", maxWidth: 430, border: "1px solid var(--surface-blue)", maxHeight: "88vh", overflowY: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                 <div>
-                  <div style={{ color: "#60a5fa", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}</div>
+                  <div style={{ color: "#60a5fa", fontSize: 16, fontWeight: 800 }}>HOLE {holeNum} · PAR {hole.par}{hole.yardage ? ` · ${hole.yardage} yds` : ""}</div>
                   <div style={{ color: "var(--text3)", fontSize: 14 }}>Enter your CHGS stats</div>
                 </div>
                 <button onClick={() => closePad()} style={{ background: "var(--surface2)", border: "none", color: "var(--text2)", width: 36, height: 36, borderRadius: 18, fontSize: 18, cursor: "pointer" }}>✕</button>
@@ -1032,6 +1033,7 @@
 
       const applyCoursePars = (course) => {
         let pars = Array(18).fill(4);
+        let yardages = Array(18).fill(null);
         let holes = [];
         let teeName = "";
 
@@ -1073,11 +1075,13 @@
           holes.slice(0, 18).forEach((h, i) => {
             const par = Number(h.par || 0);
             if (par >= 3 && par <= 6) pars[i] = par;
+            const yd = Number(h.yardage || 0);
+            if (yd > 0) yardages[i] = yd;
           });
         }
 
         const name = course.club_name || course.course_name || course.name || "Unknown Course";
-        onSelectCourse({ name, pars, tee: teeName });
+        onSelectCourse({ name, pars, yardages, tee: teeName });
         setSelectedCourse(null);
       };
 
@@ -1587,11 +1591,15 @@
         const nr = [...rounds, defaultRound()];
         setRounds(nr); setActiveRound(nr.length - 1); setView("scorecard"); setActiveHalf("front");
       };
-      const onSelectCourse = ({ name, pars, tee }) => {
-        // Apply course name, tee, and hole pars to current round (functional update)
+      const onSelectCourse = ({ name, pars, yardages, tee }) => {
+        // Apply course name, tee, hole pars, and yardages to current round (functional update)
         setRounds(prev => prev.map((r, ri) => ri !== activeRound
           ? r
-          : { ...r, course: name, tee: tee !== undefined ? tee : r.tee, holes: r.holes.map((h, i) => ({ ...h, par: pars[i] !== undefined ? pars[i] : h.par })) }
+          : { ...r, course: name, tee: tee !== undefined ? tee : r.tee, holes: r.holes.map((h, i) => ({
+              ...h,
+              par: pars[i] !== undefined ? pars[i] : h.par,
+              yardage: yardages && yardages[i] !== undefined ? yardages[i] : h.yardage,
+            })) }
         ));
         setView("scorecard");
       };
@@ -1647,7 +1655,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v43</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v44</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1879,7 +1887,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "43";
+      var CURRENT_VERSION = "44";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
