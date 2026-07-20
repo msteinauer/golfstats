@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v35</title>
+  <title>GolfLog v38</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -117,6 +117,7 @@
 
     const defaultRound = () => ({
       course: "",
+      tee: "",
       date: new Date().toISOString().split("T")[0],
       holes: HOLES.map(() => defaultHole()),
     });
@@ -909,6 +910,7 @@
       const [countries, setCountries] = useState([]);
       const [results, setResults] = useState([]);
       const [loading, setLoading] = useState(false);
+      const [favLoadingId, setFavLoadingId] = useState(null); // tracks which single favorite is loading, not shared across rows
       const [error, setError] = useState("");
       const [selectedTee, setSelectedTee] = useState(null);
       const [selectedCourse, setSelectedCourse] = useState(null);
@@ -971,7 +973,7 @@
       };
 
       const searchCourses = () => {
-        if (!state && !query.trim()) { setError("Please select a state or enter part of a course name."); return; }
+        if (!state && !query.trim() && !country) { setError("Please select a country or state, or enter part of a course name."); return; }
         if (!courseIndex) {
           setError(indexError || "Course list still loading — try again in a moment.");
           return;
@@ -1031,6 +1033,7 @@
       const applyCoursePars = (course) => {
         let pars = Array(18).fill(4);
         let holes = [];
+        let teeName = "";
 
         // Parse tees if stored as string (from Supabase)
         let tees = course.tees;
@@ -1057,6 +1060,7 @@
               ? true18.reduce((a, b) => (b.total_yards || 0) > (a.total_yards || 0) ? b : a)
               : (teeGroups.find(t => t.holes && t.holes.length >= 18) || teeGroups[0]);
             holes = best.holes || [];
+            teeName = best.tee_name || "";
           }
         }
 
@@ -1073,7 +1077,7 @@
         }
 
         const name = course.club_name || course.course_name || course.name || "Unknown Course";
-        onSelectCourse({ name, pars });
+        onSelectCourse({ name, pars, tee: teeName });
         setSelectedCourse(null);
       };
 
@@ -1284,8 +1288,8 @@
                     <span style={{ color: "#fbbf24", fontSize: 16 }}>★</span>
                   </div>
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
-                    <button disabled={loading} onClick={async () => {
-                      setLoading(true); setError("");
+                    <button disabled={favLoadingId === i} onClick={async () => {
+                      setFavLoadingId(i); setError("");
                       let tees = {};
                       try {
                         tees = typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {});
@@ -1300,11 +1304,11 @@
                       setSelectedTee(null);
                       setView("courses");
                       setTab("search");
-                      setLoading(false);
+                      setFavLoadingId(null);
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
-                      color: loading ? "var(--text3)" : "#4ade80", fontSize: 13, fontWeight: 700, cursor: loading ? "default" : "pointer",
-                    }}>{loading ? "Loading..." : "✓ Use Course"}</button>
+                      color: favLoadingId === i ? "var(--text3)" : "#4ade80", fontSize: 13, fontWeight: 700, cursor: favLoadingId === i ? "default" : "pointer",
+                    }}>{favLoadingId === i ? "Loading..." : "✓ Use Course"}</button>
                     <button onClick={() => saveFavorites(favorites.filter((_, fi) => fi !== i))} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
                       color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
@@ -1580,11 +1584,11 @@
         const nr = [...rounds, defaultRound()];
         setRounds(nr); setActiveRound(nr.length - 1); setView("scorecard"); setActiveHalf("front");
       };
-      const onSelectCourse = ({ name, pars }) => {
-        // Apply course name and hole pars to current round (functional update)
+      const onSelectCourse = ({ name, pars, tee }) => {
+        // Apply course name, tee, and hole pars to current round (functional update)
         setRounds(prev => prev.map((r, ri) => ri !== activeRound
           ? r
-          : { ...r, course: name, holes: r.holes.map((h, i) => ({ ...h, par: pars[i] !== undefined ? pars[i] : h.par })) }
+          : { ...r, course: name, tee: tee !== undefined ? tee : r.tee, holes: r.holes.map((h, i) => ({ ...h, par: pars[i] !== undefined ? pars[i] : h.par })) }
         ));
         setView("scorecard");
       };
@@ -1640,7 +1644,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v35</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v38</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1676,6 +1680,14 @@
                   <input type="date" value={round.date} onChange={e => updateRoundMeta("date", e.target.value)}
                     style={{ flex: 1, background: "var(--surface)", border: "1px solid var(--surface2)", borderRadius: 9, padding: "8px 10px", color: "var(--text3)", fontSize: 14, outline: "none", colorScheme: "dark" }} />
                 </div>
+                {round.tee && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: -8, marginBottom: 14, fontSize: 13, color: "var(--text3)" }}>
+                    <span>Tees:</span>
+                    <span style={{ color: "#4ade80", fontWeight: 700 }}>{round.tee}</span>
+                    <button onClick={() => updateRoundMeta("tee", "")} title="Clear tee"
+                      style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", marginLeft: 2 }}>✕</button>
+                  </div>
+                )}
                 <div style={{ display: "flex", background: "var(--surface)", borderRadius: 10, border: "1px solid var(--surface2)", padding: 3, marginBottom: 14 }}>
                   {["front","back"].map(half => (
                     <button key={half} onClick={() => setActiveHalf(half)} style={{
@@ -1858,7 +1870,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "35";
+      var CURRENT_VERSION = "38";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
