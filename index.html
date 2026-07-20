@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v34</title>
+  <title>GolfLog v35</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -79,11 +79,17 @@
 
     async function loadTeeBucket(bucket) {
       if (_teeBucketCache[bucket]) return _teeBucketCache[bucket];
-      const res = await fetch(`./tees/${bucket}.json`);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      _teeBucketCache[bucket] = data;
-      return data;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // give up after 12s
+      try {
+        const res = await fetch(`./tees/${bucket}.json`, { signal: controller.signal });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        _teeBucketCache[bucket] = data;
+        return data;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
 
     // Returns tees object for a course id, or {} if not found
@@ -1634,7 +1640,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v34</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v35</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1852,7 +1858,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "34";
+      var CURRENT_VERSION = "35";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
