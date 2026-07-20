@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v33</title>
+  <title>GolfLog v34</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -1280,20 +1280,20 @@
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
                     <button disabled={loading} onClick={async () => {
                       setLoading(true); setError("");
+                      let tees = {};
                       try {
-                        // Use stored tees if present; only fetch as fallback (old pre-v31 favorites)
-                        let tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
-                        if ((!tees || (!tees.male && !tees.female)) && c.id) {
-                          tees = await getCourseTees(c.id);
-                        }
-                        // Open the tee selector so the user can pick a tee box
-                        setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
-                        setSelectedTee(null);
-                        setView("courses");
-                        setTab("search");
+                        tees = typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {});
                       } catch (e) {
-                        setError("Could not load tee data for this course. Check your connection and try again.");
+                        tees = {};
                       }
+                      if ((!tees || (!tees.male && !tees.female)) && c.id) {
+                        tees = await getCourseTees(c.id); // never throws - returns {} on failure
+                      }
+                      // Open the tee selector so the user can pick a tee box
+                      setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
+                      setSelectedTee(null);
+                      setView("courses");
+                      setTab("search");
                       setLoading(false);
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
@@ -1634,7 +1634,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v33</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v34</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1852,16 +1852,37 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "33";
+      var CURRENT_VERSION = "34";
+      var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
+      var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
+
+      function getReloadState() {
+        try { return JSON.parse(sessionStorage.getItem("golflog_reload_state") || "{}"); } catch (e) { return {}; }
+      }
+      function setReloadState(s) {
+        try { sessionStorage.setItem("golflog_reload_state", JSON.stringify(s)); } catch (e) {}
+      }
+
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
           if (!res.ok) return;
           var data = await res.json();
-          if (data.version && String(data.version) !== CURRENT_VERSION) {
-            // New version available - reload from server
-            window.location.reload(true);
-          }
+          var target = data.version && String(data.version);
+          if (!target || target === CURRENT_VERSION) return;
+
+          var state = getReloadState();
+          var now = Date.now();
+          if (state.version !== target) state = { version: target, attempts: 0, lastAttempt: 0 };
+          if (state.attempts >= MAX_ATTEMPTS_PER_VERSION) return; // stuck stale cache — stop hammering
+          if (now - (state.lastAttempt || 0) < RELOAD_COOLDOWN_MS) return;
+
+          state.attempts += 1;
+          state.lastAttempt = now;
+          setReloadState(state);
+
+          // Navigate to a cache-busted URL so we don't just get the same stale HTML back
+          window.location.href = window.location.pathname + "?_=" + now;
         } catch (e) {}
       }
       // Check on load, on focus, and periodically
