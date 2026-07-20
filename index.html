@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v32</title>
+  <title>GolfLog v33</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -1278,20 +1278,27 @@
                     <span style={{ color: "#fbbf24", fontSize: 16 }}>★</span>
                   </div>
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
-                    <button onClick={async () => {
-                      // Use stored tees if present; only fetch as fallback (old pre-v31 favorites)
-                      let tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
-                      if ((!tees || (!tees.male && !tees.female)) && c.id) {
-                        tees = await getCourseTees(c.id);
+                    <button disabled={loading} onClick={async () => {
+                      setLoading(true); setError("");
+                      try {
+                        // Use stored tees if present; only fetch as fallback (old pre-v31 favorites)
+                        let tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
+                        if ((!tees || (!tees.male && !tees.female)) && c.id) {
+                          tees = await getCourseTees(c.id);
+                        }
+                        // Open the tee selector so the user can pick a tee box
+                        setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
+                        setSelectedTee(null);
+                        setView("courses");
+                        setTab("search");
+                      } catch (e) {
+                        setError("Could not load tee data for this course. Check your connection and try again.");
                       }
-                      // Open the tee selector so the user can pick a tee box
-                      setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
-                      setSelectedTee(null);
-                      setView("courses");
+                      setLoading(false);
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
-                      color: "#4ade80", fontSize: 13, fontWeight: 700, cursor: "pointer",
-                    }}>✓ Use Course</button>
+                      color: loading ? "var(--text3)" : "#4ade80", fontSize: 13, fontWeight: 700, cursor: loading ? "default" : "pointer",
+                    }}>{loading ? "Loading..." : "✓ Use Course"}</button>
                     <button onClick={() => saveFavorites(favorites.filter((_, fi) => fi !== i))} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
                       color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
@@ -1627,7 +1634,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v32</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v33</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1845,7 +1852,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "32";
+      var CURRENT_VERSION = "33";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
