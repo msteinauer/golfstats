@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v39</title>
+  <title>GolfLog v41</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -1298,17 +1298,20 @@
                       }
                       if ((!tees || (!tees.male && !tees.female)) && c.id) {
                         tees = await getCourseTees(c.id); // never throws - returns {} on failure
+                        if (tees && (tees.male || tees.female)) {
+                          // Save fetched tees back into this favorite so future taps are instant
+                          saveFavorites(favorites.map((f, fi) => fi === i ? { ...f, tees } : f));
+                        }
                       }
                       // Open the tee selector so the user can pick a tee box
                       setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
                       setSelectedTee(null);
-                      setView("courses");
                       setTab("search");
                       setFavLoadingId(null);
                     }} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none",
                       color: favLoadingId === i ? "var(--text3)" : "#4ade80", fontSize: 13, fontWeight: 700, cursor: favLoadingId === i ? "default" : "pointer",
-                    }}>✓ Use Course</button>
+                    }}>{favLoadingId === i ? "✓ Use Course…" : "✓ Use Course"}</button>
                     <button onClick={() => saveFavorites(favorites.filter((_, fi) => fi !== i))} style={{
                       flex: 1, padding: "8px", background: "transparent", border: "none", borderLeft: "1px solid var(--surface2)",
                       color: "#ef4444", fontSize: 13, fontWeight: 600, cursor: "pointer",
@@ -1644,7 +1647,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v39</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v41</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1715,6 +1718,12 @@
 
             {view === "chgs" && (
               <>
+                {round.tee && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 13, color: "var(--text3)" }}>
+                    <span>Tees:</span>
+                    <span style={{ color: "#4ade80", fontWeight: 700 }}>{round.tee}</span>
+                  </div>
+                )}
                 <div style={{ display: "flex", background: "var(--surface)", borderRadius: 10, border: "1px solid var(--surface2)", padding: 3, marginBottom: 14 }}>
                   {[{id:"entry",label:"Enter Stats"},{id:"chgssummary",label:"Summary"}].map(t => (
                     <button key={t.id} onClick={() => setChgsTab(t.id)} style={{
@@ -1870,7 +1879,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "39";
+      var CURRENT_VERSION = "41";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
