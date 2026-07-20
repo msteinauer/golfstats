@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v42</title>
+  <title>GolfLog v43</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -618,7 +618,7 @@
               {/* SCORE */}
               <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.score || ""}
+                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.score || ""} autoFocus
                   onChange={e => onChange({ ...hole, score: e.target.value, chgsScore: e.target.value })} placeholder="—"
                   style={{ flex: 1, height: 64, borderRadius: 14, background: "var(--surface2)", border: "2px solid #16a34a", color: "var(--text)", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
                 {hole.score && (() => {
@@ -784,7 +784,7 @@
               {/* SCORE */}
               <div style={{ color: "var(--text3)", fontSize: 14, fontWeight: 700, letterSpacing: "0.06em", marginBottom: 8 }}>SCORE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""}
+                <input type="number" inputMode="numeric" pattern="[0-9]*" min="1" max="15" value={hole.chgsScore || ""} autoFocus
                   onChange={e => onChange({ ...hole, chgsScore: e.target.value, score: e.target.value })} placeholder="—"
                   style={{ flex: 1, height: 64, borderRadius: 14, background: "var(--surface2)", border: "2px solid #2563eb", color: "var(--text)", fontSize: 32, fontWeight: 800, textAlign: "center", outline: "none" }} />
                 {hole.chgsScore && (() => {
@@ -1647,7 +1647,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v42</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v43</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1879,7 +1879,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "42";
+      var CURRENT_VERSION = "43";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
