@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v30</title>
+  <title>GolfLog v32</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -59,6 +59,44 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    // ── Static course data (replaces Supabase) ────────────────────────
+    // courses-index.json: lightweight array for search/browse: {id, n, cn, c, s, co, h}
+    // tees/{bucket}.json: full tee data keyed by course id, bucket = floor(id/500)
+    const COURSES_INDEX_URL = "./courses-index.json";
+    const TEE_BUCKET_SIZE = 500;
+    let _courseIndexPromise = null;
+    const _teeBucketCache = {}; // bucket number -> parsed object (in-memory, per session only)
+
+    function loadCourseIndex() {
+      if (!_courseIndexPromise) {
+        _courseIndexPromise = fetch(COURSES_INDEX_URL)
+          .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .catch(err => { _courseIndexPromise = null; throw err; });
+      }
+      return _courseIndexPromise;
+    }
+
+    async function loadTeeBucket(bucket) {
+      if (_teeBucketCache[bucket]) return _teeBucketCache[bucket];
+      const res = await fetch(`./tees/${bucket}.json`);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      _teeBucketCache[bucket] = data;
+      return data;
+    }
+
+    // Returns tees object for a course id, or {} if not found
+    async function getCourseTees(id) {
+      const bucket = Math.floor(id / TEE_BUCKET_SIZE);
+      try {
+        const data = await loadTeeBucket(bucket);
+        const entry = data[id] || data[String(id)];
+        return (entry && entry.tees) || {};
+      } catch {
+        return {};
+      }
+    }
 
     const HOLES = Array.from({ length: 18 }, (_, i) => i + 1);
     const PAR_OPTIONS = [3, 4, 5];
@@ -880,19 +918,18 @@
       const [newCourseState, setNewCourseState] = useState("");
       const [newCoursePars, setNewCoursePars] = useState(Array(18).fill(4));
 
-      // Load unique countries from Supabase on mount
+      const [courseIndex, setCourseIndex] = useState(null);
+      const [indexError, setIndexError] = useState("");
+
+      // Load the static course index once on mount
       React.useEffect(() => {
-        const SURL = "https://koingualzctoyulzytxb.supabase.co";
-        const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
-        fetch(`${SURL}/rest/v1/courses?select=country&limit=1000`, {
-          headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` }
-        })
-        .then(r => r.json())
-        .then(data => {
-          const unique = [...new Set(data.map(c => c.country).filter(c => c && c !== "Unknown" && c !== ""))].sort();
-          setCountries(["", ...unique]);
-        })
-        .catch(() => {});
+        loadCourseIndex()
+          .then(data => {
+            setCourseIndex(data);
+            const unique = [...new Set(data.map(c => c.co).filter(c => c && c !== "Unknown"))].sort();
+            setCountries(["", ...unique]);
+          })
+          .catch(() => setIndexError("Could not load course list. Check your connection and reload."));
       }, []);
 
       const saveFavorites = (favs) => {
@@ -914,143 +951,76 @@
         }
       };
 
-      const searchCourses = async () => {
+      const stateAbbrevs = {
+        "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA",
+        "Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA",
+        "Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS",
+        "Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA",
+        "Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT",
+        "Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM",
+        "New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK",
+        "Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC",
+        "South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT",
+        "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
+      };
+
+      const searchCourses = () => {
         if (!state && !query.trim()) { setError("Please select a state or enter part of a course name."); return; }
+        if (!courseIndex) {
+          setError(indexError || "Course list still loading — try again in a moment.");
+          return;
+        }
         setLoading(true); setError(""); setResults([]);
 
-        const COURSE_CACHE_KEY = "golflog_courses_";
-        const stateAbbrevs = {
-          "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA",
-          "Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA",
-          "Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS",
-          "Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA",
-          "Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT",
-          "Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM",
-          "New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK",
-          "Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC",
-          "South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT",
-          "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
-        };
         const stateAbbr = state ? stateAbbrevs[state] : null;
-        const SURL = "https://koingualzctoyulzytxb.supabase.co";
-        const SKEY = "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV";
+        const q = query.trim().toLowerCase();
 
-        try {
-          if (!query.trim() && stateAbbr) {
-            // State browse — check cache first
-            const cacheKey = COURSE_CACHE_KEY + stateAbbr;
-            try {
-              const cached = localStorage.getItem(cacheKey);
-              if (cached) {
-                const { courses, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < 7 * 24 * 60 * 60 * 1000) {
-                  setResults(courses.slice(0, 500));
-                  setLoading(false);
-                  return;
-                }
-              }
-            } catch {}
+        let matches = courseIndex;
+        if (country) matches = matches.filter(c => c.co === country);
+        if (stateAbbr) matches = matches.filter(c => c.s === stateAbbr);
+        if (q) matches = matches.filter(c => (c.n || "").toLowerCase().includes(q) || (c.cn || "").toLowerCase().includes(q));
 
-            // Fetch from Supabase
-            setError(`Loading courses in ${state}...`);
-            const res = await fetch(
-              `${SURL}/rest/v1/courses?select=id,club_name,course_name,city,state,country,number_of_holes,tees&state=eq.${stateAbbr}&limit=500&order=club_name.asc`,
-              { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } }
-            );
-            const rows = await res.json();
-            const seenKeys = new Set();
-            const allCourses = rows.filter(c => {
-              const key = (c.club_name + "|" + (c.course_name || "") + "|" + c.city).toLowerCase();
-              if (seenKeys.has(key)) return false;
-              seenKeys.add(key);
-              return true;
-            }).map(c => ({
-              id: c.id, club_name: c.club_name, course_name: c.course_name || c.club_name,
-              number_of_holes: c.number_of_holes,
-              location: { city: c.city, state: c.state },
-              tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
-            }));
-            try {
-              localStorage.setItem(cacheKey, JSON.stringify({ courses: allCourses, timestamp: Date.now() }));
-            } catch {}
-            setError("");
-            setResults(allCourses.slice(0, 500));
-            if (!allCourses.length) setError(`No courses in ${state} yet. Try searching by name.`);
+        // Dedupe by name+city, prefer the entry with more holes listed
+        const byKey = {};
+        for (const c of matches) {
+          const key = (c.n + "|" + (c.cn || "") + "|" + c.c).toLowerCase();
+          if (!byKey[key] || (c.h || 0) > (byKey[key].h || 0)) byKey[key] = c;
+        }
+        const deduped = Object.values(byKey)
+          .sort((a, b) => (a.n || "").localeCompare(b.n || ""))
+          .slice(0, 500)
+          .map(c => ({
+            id: c.id, club_name: c.n, course_name: c.cn || c.n,
+            number_of_holes: c.h,
+            location: {
+              city: c.c && c.c !== "Unknown" ? c.c : "",
+              state: c.s && c.s !== "Unknown" ? c.s : "",
+              country: c.co && c.co !== "Unknown" ? c.co : ""
+            },
+            tees: null // loaded lazily on selection
+          }));
 
-          } else {
-            // Name search from Supabase
-            const q = query.trim();
-            let url = `${SURL}/rest/v1/courses?select=id,club_name,course_name,city,state,country,number_of_holes,tees&limit=100&order=club_name.asc`;
-            if (country && country !== "United States") url += `&country=eq.${encodeURIComponent(country)}`;
-            if (stateAbbr) url += `&state=eq.${stateAbbr}`;
-            if (q) url += `&club_name=ilike.${encodeURIComponent("%" + q + "%")}`;
-
-            const res = await fetch(url, { headers: { "apikey": SKEY, "Authorization": `Bearer ${SKEY}` } });
-            const rows = await res.json();
-            // Group by name+city, keep the one with the largest tees data (real 18-hole)
-            const byKey = {};
-            for (const c of rows) {
-              const key = (c.club_name + "|" + (c.course_name || "") + "|" + c.city).toLowerCase();
-              const teesLen = (c.tees || "").length;
-              if (!byKey[key] || teesLen > (byKey[key].tees || "").length) {
-                byKey[key] = c;
-              }
-            }
-            const courses = Object.values(byKey).map(c => ({
-              id: c.id, club_name: c.club_name, course_name: c.course_name || c.club_name,
-              number_of_holes: c.number_of_holes,
-              location: {
-                city: c.city !== "Unknown" ? c.city : "",
-                state: c.state !== "Unknown" ? c.state : "",
-                country: c.country !== "Unknown" ? c.country : ""
-              },
-              tees: typeof c.tees === "string" ? JSON.parse(c.tees) : (c.tees || {})
-            }));
-
-            if (courses.length) {
-              setResults(courses);
-            } else if (q) {
-              // Fall back to live API
-              const apiQ = q + (country && country !== "United States" ? " " + country : "") + (stateAbbr ? " " + state : "");
-              const apiRes = await fetch(`https://golfproxy.vercel.app/api/search?q=${encodeURIComponent(apiQ)}`);
-              const apiData = await apiRes.json();
-              let apiCourses = apiData.courses || [];
-              if (stateAbbr) apiCourses = apiCourses.filter(c => (c.location?.state||"").toUpperCase() === stateAbbr);
-              if (country && country !== "United States") {
-                apiCourses = apiCourses.filter(c => (c.location?.country||"").toLowerCase().includes(country.toLowerCase().split(" ")[0].toLowerCase()));
-              }
-              setResults(apiCourses.slice(0, 500));
-              if (!apiCourses.length) setError(`No courses found for "${q}"${country ? " in " + country : ""}${state ? ", " + state : ""}. Try a different name.`);
-            } else {
-              setError(`No courses found${country ? " in " + country : ""}${state ? ", " + state : ""}. Try typing a course name.`);
-            }
-          }
-        } catch (e) {
-          setError("Search failed: " + e.message);
+        setResults(deduped);
+        if (!deduped.length) {
+          setError(`No courses found${country ? " in " + country : ""}${state ? ", " + state : ""}${q ? ` for "${query.trim()}"` : ""}. Try a different name, or add it manually via My Courses.`);
         }
         setLoading(false);
       };
 
-
-
-            const fetchCourseDetail = async (courseId) => {
+      // Fetch tee data for a course from its bucket and open the detail view
+      const selectCourse = async (c) => {
         setLoading(true); setError("");
         try {
-          const res = await fetch(`https://golfproxy.vercel.app/api/course?id=${courseId}`);
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const data = await res.json();
-          // Unwrap course object
-        const courseData = data.course || data;
-        // If tees is a string (from Supabase), parse it
-        if (typeof courseData.tees === "string") {
-          try { courseData.tees = JSON.parse(courseData.tees); } catch { courseData.tees = {}; }
-        }
-        setSelectedCourse(courseData); setSelectedTee(null);
+          const tees = await getCourseTees(c.id);
+          setSelectedCourse({ ...c, tees });
         } catch {
-          setError("Could not load course details.");
+          setSelectedCourse({ ...c, tees: {} });
+          setError("Could not load tee data for this course.");
         }
+        setSelectedTee(null);
         setLoading(false);
       };
+
 
       const applyCoursePars = (course) => {
         let pars = Array(18).fill(4);
@@ -1163,18 +1133,12 @@
               </div>
               {error && <div style={{ color: "#f87171", fontSize: 14, marginBottom: 10 }}>{error}</div>}
               {results.length > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <div style={{ color: "var(--text3)", fontSize: 13 }}>Showing {results.length} courses</div>
-                  {state && <button onClick={() => {
-                    const abbrs = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
-                    localStorage.removeItem("golflog_courses_" + abbrs[state]);
-                    setResults([]); setError("Cache cleared — search again to refresh.");
-                  }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}>Clear cache</button>}
-                </div>
+                <div style={{ color: "var(--text3)", fontSize: 13, marginBottom: 8 }}>Showing {results.length} courses</div>
               )}
-              {loading && <div style={{ color: "var(--text3)", fontSize: 15, textAlign: "center", padding: 20 }}>
-                {state && !query ? `Building course list for ${state}... (first time only)` : "Searching..."}
-              </div>}
+              {loading && <div style={{ color: "var(--text3)", fontSize: 15, textAlign: "center", padding: 20 }}>Loading...</div>}
+              {!courseIndex && !indexError && (
+                <div style={{ color: "var(--text3)", fontSize: 15, textAlign: "center", padding: 20 }}>Loading course list...</div>
+              )}
 
 
               {/* Course detail view */}
@@ -1183,7 +1147,7 @@
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
                       <div style={{ color: "var(--text)", fontWeight: 700, fontSize: 16 }}>{selectedCourse.club_name || selectedCourse.name}</div>
-                      <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{selectedCourse.city}, {selectedCourse.state || state}</div>
+                      <div style={{ color: "var(--text3)", fontSize: 14, marginTop: 2 }}>{selectedCourse.location?.city || selectedCourse.city || ""}{(selectedCourse.location?.city || selectedCourse.city) ? ", " : ""}{selectedCourse.location?.state || selectedCourse.state || state}</div>
                     </div>
                     <button onClick={() => { setSelectedCourse(null); setSelectedTee(null); }} style={{ background: "none", border: "none", color: "var(--text3)", fontSize: 18, cursor: "pointer" }}>✕</button>
                   </div>
@@ -1271,23 +1235,7 @@
 
               {/* Results list */}
               {!selectedCourse && results.map((c, i) => (
-                <button key={i} onClick={() => {
-                    // If we already have tees data from Supabase, use it directly
-                    if (c.tees && typeof c.tees === "object" && Object.keys(c.tees).length > 0) {
-                      setSelectedCourse(c); setSelectedTee(null);
-                    } else if (c.tees && typeof c.tees === "string") {
-                      try {
-                        const parsed = JSON.parse(c.tees);
-                        if (Object.keys(parsed).length > 0) {
-                          setSelectedCourse({...c, tees: parsed}); setSelectedTee(null);
-                          return;
-                        }
-                      } catch {}
-                      fetchCourseDetail(c.id || c.club_id);
-                    } else {
-                      fetchCourseDetail(c.id || c.club_id);
-                    }
-                  }} style={{
+                <button key={i} onClick={() => selectCourse(c)} style={{
                   width: "100%", background: "var(--surface)", border: "1px solid var(--surface2)",
                   borderRadius: 10, padding: "12px 14px", marginBottom: 8,
                   textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -1331,19 +1279,10 @@
                   </div>
                   <div style={{ borderTop: "1px solid var(--surface2)", display: "flex" }}>
                     <button onClick={async () => {
-                      // Use stored tees if present; only fetch as fallback
+                      // Use stored tees if present; only fetch as fallback (old pre-v31 favorites)
                       let tees = typeof c.tees === "string" ? JSON.parse(c.tees || "{}") : (c.tees || {});
-                      if (!tees || (!tees.male && !tees.female)) {
-                        try {
-                          const res = await fetch(
-                            `https://koingualzctoyulzytxb.supabase.co/rest/v1/courses?select=tees&id=eq.${c.id}&limit=1`,
-                            { headers: { "apikey": "sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV", "Authorization": "Bearer sb_publishable_hjbdLga6ndmIsiq7jIdXGw_weKPNIQV" } }
-                          );
-                          const rows = await res.json();
-                          if (rows[0]?.tees) {
-                            tees = typeof rows[0].tees === "string" ? JSON.parse(rows[0].tees) : rows[0].tees;
-                          }
-                        } catch {}
+                      if ((!tees || (!tees.male && !tees.female)) && c.id) {
+                        tees = await getCourseTees(c.id);
                       }
                       // Open the tee selector so the user can pick a tee box
                       setSelectedCourse({ id: c.id, club_id: c.id, name: c.name, club_name: c.name, state: c.state, tees: tees, holes: c.holes });
@@ -1547,7 +1486,6 @@
     const STORAGE_KEY = "golflog_rounds";
     const COURSES_KEY = "golflog_custom_courses";
     const FAVORITES_KEY = "golflog_favorites";
-    const GOLF_API_KEY = "YQCJTUNPSFW276PCMN7YDJFGIA"; // Replace with your golfcourseapi.com key
 
     const US_STATES = [
       "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
@@ -1689,7 +1627,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v30</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v32</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1907,7 +1845,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "30";
+      var CURRENT_VERSION = "32";
       async function checkVersion() {
         try {
           var res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
