@@ -9,7 +9,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>GolfLog v45</title>
+  <title>GolfLog v46</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); transition: background 0.2s; }
@@ -278,7 +278,8 @@
     }
 
     // ── Text summary builder ─────────────────────────────────────────
-    function buildTextSummary(round) {
+    function buildTextSummary(round, options = {}) {
+      const { includeHoleByHole = true } = options;
       const played = round.holes.filter(h => h.score !== "");
       if (!played.length) return "No scores entered yet.";
       const totalScore = played.reduce((s, h) => s + Number(h.score), 0);
@@ -293,6 +294,8 @@
 
       // CHGS
       const cp = round.holes.filter(h => h.chgsScore !== "");
+      const chipHoles = round.holes.filter(h => h.chips !== "");
+      const totalChips = chipHoles.reduce((s, h) => s + Number(h.chips), 0);
       const g80p = cp.filter(h => h.greenPlus80 === true || h.greenPlus80 === false);
       const g80m = cp.filter(h => h.greenMinus80 === true || h.greenMinus80 === false);
       const ud   = cp.filter(h => h.upAndDown === true || h.upAndDown === false);
@@ -308,22 +311,25 @@
       if (fwHoles.length)   text += `FIR:    ${fwHit}/${fwHoles.length} (${Math.round(fwHit/fwHoles.length*100)}%)\n`;
       text += `GIR:    ${girCount}/${played.length} (${Math.round(girCount/played.length*100)}%)\n`;
 
-      if (cp.length) {
+      if (cp.length || chipHoles.length) {
         text += `\nCHGS STATS\n`;
         if (chgsFw.length) text += `Fairway:     ${chgsFw.filter(h=>h.chgsFairway==="hit").length}/${chgsFw.length} (${Math.round(chgsFw.filter(h=>h.chgsFairway==="hit").length/chgsFw.length*100)}%)\n`;
         if (g80p.length)   text += `Green +80:   ${g80p.filter(h=>h.greenPlus80===true).length}/${g80p.length} (${Math.round(g80p.filter(h=>h.greenPlus80===true).length/g80p.length*100)}%)\n`;
         if (g80m.length)   text += `Green -80:   ${g80m.filter(h=>h.greenMinus80===true).length}/${g80m.length} (${Math.round(g80m.filter(h=>h.greenMinus80===true).length/g80m.length*100)}%)\n`;
         if (ud.length)     text += `Up & Down:   ${ud.filter(h=>h.upAndDown===true).length}/${ud.length} (${Math.round(ud.filter(h=>h.upAndDown===true).length/ud.length*100)}%)\n`;
+        if (chipHoles.length) text += `Chips:       ${totalChips} (${(totalChips/chipHoles.length).toFixed(1)}/hole)\n`;
       }
 
-      text += `\nHOLE BY HOLE\n`;
-      text += `H  Par Score\n`;
-      round.holes.forEach((h, i) => {
-        if (h.score === "") return;
-        const d = Number(h.score) - Number(h.par);
-        const badge = d <= -2 ? "Eagle" : d === -1 ? "Birdie" : d === 0 ? "Par" : d === 1 ? "Bogey" : d === 2 ? "Double" : `+${d}`;
-        text += `${String(i+1).padStart(2)}   ${h.par}     ${h.score}   ${badge}\n`;
-      });
+      if (includeHoleByHole) {
+        text += `\nHOLE BY HOLE\n`;
+        text += `H  Par Score\n`;
+        round.holes.forEach((h, i) => {
+          if (h.score === "") return;
+          const d = Number(h.score) - Number(h.par);
+          const badge = d <= -2 ? "Eagle" : d === -1 ? "Birdie" : d === 0 ? "Par" : d === 1 ? "Bogey" : d === 2 ? "Double" : `+${d}`;
+          text += `${String(i+1).padStart(2)}   ${h.par}     ${h.score}   ${badge}\n`;
+        });
+      }
       return text;
     }
 
@@ -358,8 +364,8 @@
 
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
 
-      const handleCopyText = () => {
-        const text = buildTextSummary(round);
+      const handleCopyText = (short = false) => {
+        const text = buildTextSummary(round, { includeHoleByHole: !short });
         navigator.clipboard.writeText(text).then(() => { showToast("✓ Copied to clipboard!"); setTimeout(onClose, 1200); }).catch(() => {
           const el = document.createElement("textarea");
           el.value = text; document.body.appendChild(el); el.select();
@@ -368,11 +374,11 @@
         });
       };
 
-      const handleShareText = () => {
-        const text = buildTextSummary(round);
+      const handleShareText = (short = false) => {
+        const text = buildTextSummary(round, { includeHoleByHole: !short });
         if (navigator.share) {
           navigator.share({ title: "Golf Round", text }).catch(() => {});
-        } else { handleCopyText(); }
+        } else { handleCopyText(short); }
       };
 
       const handleShareLink = () => {
@@ -411,11 +417,19 @@
               {round.course || "Untitled Round"} · {round.date}
             </div>
 
-            <button onClick={handleShareText} style={btnStyle("#166534")}>
+            <button onClick={() => handleShareText(false)} style={btnStyle("#166534")}>
               <span style={{ fontSize: 20 }}>📋</span>
               <div>
                 <div>Copy / Share as Text</div>
                 <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Full summary you can paste into any message</div>
+              </div>
+            </button>
+
+            <button onClick={() => handleShareText(true)} style={btnStyle("#15803d")}>
+              <span style={{ fontSize: 20 }}>📝</span>
+              <div>
+                <div>Copy / Share Short Summary</div>
+                <div style={{ fontSize: 13, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>Same, without the hole-by-hole list</div>
               </div>
             </button>
 
@@ -1658,7 +1672,7 @@
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 22 }}>⛳</span>
-                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v45</span>
+                  <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>GolfLog</span><span style={{ fontSize: 13, color: "var(--text3)", marginLeft: 4, fontWeight: 600 }}>v46</span>
                 </div>
                 {totalScoreStr && <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 15, marginTop: 1, paddingLeft: 30 }}>{totalScoreStr}</div>}
               </div>
@@ -1892,7 +1906,7 @@
   <script>
     // Auto-update: check for new version every 60s and on focus
     (function() {
-      var CURRENT_VERSION = "45";
+      var CURRENT_VERSION = "46";
       var RELOAD_COOLDOWN_MS = 15000; // never reload more than once per 15s
       var MAX_ATTEMPTS_PER_VERSION = 4; // give up on a stuck CDN cache instead of looping forever
 
