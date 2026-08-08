@@ -2,7 +2,7 @@
   "name": "GolfLog",
   "short_name": "GolfLog",
   "description": "Track your golf scores, putts, fairways, and CHGS stats.",
-  "start_url": "./golflog.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
